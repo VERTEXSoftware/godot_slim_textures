@@ -305,12 +305,14 @@ Ref<Resource> ResourceFormatSLIM::load(const String &p_path, const String &p_ori
 	if (f.is_null()) {
 		ERR_FAIL_V_MSG(Ref<Resource>(), "[SLIM_LOAD_ERROR][" + p_path+"]");
 	}
-	#if defined(WINDOWS_ENABLED) && defined(DEBUG_ENABLED)
+	
+	#ifndef WINDOWS_SUBSYSTEM_CONSOLE
 		uint64_t start_time = OS::get_singleton()->get_ticks_usec();
 	#endif
 
 	Ref<Image> img = load_slim_from_file_access(f, r_error);
-	#if defined(WINDOWS_ENABLED) && defined(DEBUG_ENABLED)
+
+	#ifndef WINDOWS_SUBSYSTEM_CONSOLE
 		uint64_t end_time = OS::get_singleton()->get_ticks_usec();
 		double ms = (end_time - start_time) / 1000.0;
 	#endif
@@ -321,7 +323,7 @@ Ref<Resource> ResourceFormatSLIM::load(const String &p_path, const String &p_ori
 
 	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
 	
-	#if defined(WINDOWS_ENABLED) && defined(DEBUG_ENABLED)
+	#ifndef WINDOWS_SUBSYSTEM_CONSOLE
 		printf("[SLIM_LOAD_OK][%.3f ms][%s]\n", ms, p_path.utf8().get_data());
 	#endif
 	

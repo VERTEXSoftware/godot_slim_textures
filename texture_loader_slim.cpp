@@ -132,9 +132,27 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 	f->seek(pos + _slim_lh._name_size + _slim_lh._ext_size);
 
-	if (_slim_lh._channel == 0 || _slim_lh._channel > 4)	{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");}
+	if (_slim_lh._channel <1 || _slim_lh._channel > 4)	{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");}
 
-	Image::Format img_format = (_slim_lh._channel<4) ? Image::FORMAT_RGB8 : Image::FORMAT_RGBA8;
+	Image::Format img_format = Image::FORMAT_RGBA8;
+
+	switch (_slim_lh._channel)
+	{
+		case 1:
+			img_format = Image::FORMAT_L8;
+			break;
+		case 2:
+			img_format = Image::FORMAT_LA8;
+			break;
+		case 3:
+			img_format = Image::FORMAT_RGB8;
+			break;
+		case 4:
+			img_format = Image::FORMAT_RGBA8;
+			break;
+		default:
+			ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");
+	}
 
 	uint8_t m_data		[1280u]{};	//Curret	block memory
 	uint8_t m_read		[1280u]{};	//Read		block memory
@@ -143,7 +161,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	uint32_t qnt		= 0;
 	uint16_t meta_code	= 0;
 
-	uint64_t data_size = (uint64_t)(_slim_lh._height * _slim_lh._width * Image::get_format_pixel_size(img_format));
+	uint64_t data_size = (uint64_t)(_slim_lh._height * _slim_lh._width * _slim_lh._channel);
 	Vector<uint8_t> data;
 	data.resize(data_size);
 
@@ -213,6 +231,8 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 					const uint32_t index	= _slim_lh._channel * (row * _slim_lh._width + column);
 					const uint32_t idxclr	= m_data[1024u + Cout];
 
+					++Cout;
+
 					uint32_t chn0			= (uint32_t)m_data[idxclr];
 					uint32_t chn1 			= (uint32_t)m_data[idxclr + 256u];
 					uint32_t chn2 			= (uint32_t)m_data[idxclr + 512u];
@@ -232,29 +252,38 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 						chn3 					= (uint8_t)(tchn3  > 255 ? 255 : tchn3);
 					}
 
-
 					switch (img_format)
 					{
-					case Image::FORMAT_RGB8:
-					{
-						ptr[index]		= (uint8_t)chn0;
-						ptr[index + 1] 	= (uint8_t)chn1;
-						ptr[index + 2] 	= (uint8_t)chn2;
-						break;
-					}
-					case Image::FORMAT_RGBA8:
-					{
-						ptr[index]		= (uint8_t)chn0;
-						ptr[index + 1] 	= (uint8_t)chn1;
-						ptr[index + 2] 	= (uint8_t)chn2;
-						ptr[index + 3] 	= (uint8_t)chn3;
-						break;
-					}
-					default:
-						ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Unsupported SLIM format: " + itos(_slim_lh._channel)+"]");
-					}
 
-					++Cout;
+						case Image::Image::FORMAT_L8:
+						{
+							ptr[index]		= (uint8_t)chn0;
+							break;
+						}
+						case Image::Image::FORMAT_LA8:
+						{
+							ptr[index]		= (uint8_t)chn0;
+							ptr[index + 1] 	= (uint8_t)chn3;
+							break;
+						}
+						case Image::FORMAT_RGB8:
+						{
+							ptr[index]		= (uint8_t)chn0;
+							ptr[index + 1] 	= (uint8_t)chn1;
+							ptr[index + 2] 	= (uint8_t)chn2;
+							break;
+						}
+						case Image::FORMAT_RGBA8:
+						{
+							ptr[index]		= (uint8_t)chn0;
+							ptr[index + 1] 	= (uint8_t)chn1;
+							ptr[index + 2] 	= (uint8_t)chn2;
+							ptr[index + 3] 	= (uint8_t)chn3;
+							break;
+						}
+						default:
+							ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Unsupported SLIM format: " + itos(_slim_lh._channel)+"]");
+					}
 				}
 			}
 		}
@@ -293,7 +322,7 @@ Ref<Resource> ResourceFormatSLIM::load(const String &p_path, const String &p_ori
 	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
 	
 	#if defined(WINDOWS_ENABLED) && defined(DEBUG_ENABLED)
-	printf("[SLIM_LOAD_OK][%.3f ms][%s]\n", ms, p_path.utf8().get_data());
+		printf("[SLIM_LOAD_OK][%.3f ms][%s]\n", ms, p_path.utf8().get_data());
 	#endif
 	
 	return texture;

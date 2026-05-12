@@ -33,6 +33,9 @@
 #include "compress/RLE.h"
 #include "compress/RICE.h"
 
+//Uncomment to enable texture loading logs
+//#define SLIM_DEBUG_LOG
+
 #pragma pack(push, 1)
 struct _SLIM_HEADER
 {
@@ -306,13 +309,13 @@ Ref<Resource> ResourceFormatSLIM::load(const String &p_path, const String &p_ori
 		ERR_FAIL_V_MSG(Ref<Resource>(), "[SLIM_LOAD_ERROR][" + p_path+"]");
 	}
 	
-	#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	#ifdef SLIM_DEBUG_LOG
 		uint64_t start_time = OS::get_singleton()->get_ticks_usec();
 	#endif
 
 	Ref<Image> img = load_slim_from_file_access(f, r_error);
 
-	#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	#ifdef SLIM_DEBUG_LOG
 		uint64_t end_time = OS::get_singleton()->get_ticks_usec();
 		double ms = (end_time - start_time) / 1000.0;
 	#endif
@@ -323,7 +326,7 @@ Ref<Resource> ResourceFormatSLIM::load(const String &p_path, const String &p_ori
 
 	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
 	
-	#ifndef WINDOWS_SUBSYSTEM_CONSOLE
+	#ifdef SLIM_DEBUG_LOG
 		printf("[SLIM_LOAD_OK][%.3f ms][%s]\n", ms, p_path.utf8().get_data());
 	#endif
 	
@@ -340,7 +343,7 @@ bool ResourceFormatSLIM::handles_type(const String &p_type) const {
 
 String ResourceFormatSLIM::get_resource_type(const String &p_path) const {
 	if (p_path.get_extension().to_lower() == "slim") {
-		return "ImageTexture";
+		return "Texture2D";
 	}
 	return "";
 }

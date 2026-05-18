@@ -34,17 +34,14 @@
 #include "compress/RICE.h"
 
 //Uncomment to enable texture loading logs
-//#define SLIM_DEBUG_LOG
+#define SLIM_DEBUG_LOG
 
 #pragma pack(push, 1)
 struct _SLIM_HEADER
 {
 	uint64_t _magic;
 	uint32_t _version;
-	uint16_t _width;
-	uint16_t _height;
 	uint16_t _layers;
-	uint8_t  _channels;
 };
 #pragma pack(pop)
 
@@ -57,9 +54,10 @@ struct _SLIM_LAYER_HEADER
 	uint16_t _x;
 	uint16_t _y;
 	uint16_t _z;
+	uint8_t	 _mipmaps;
 	uint8_t  _channel;
-	uint8_t  _name_size;	
-	uint16_t _ext_size;	
+	uint8_t  _name_size;
+	uint16_t _ext_size;
 };
 #pragma pack(pop)
 
@@ -124,8 +122,6 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 	if (_slim_h._magic != (uint64_t)SLIM_MAGIC) 			{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM magic number]");	}
 	if (_slim_h._version != (uint64_t)SLIM_VERSION) 		{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM version]");		}
-	if (_slim_h._width == 0 || _slim_h._height == 0) 		{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM dimensions]");	}
-	if (_slim_h._channels == 0 || _slim_h._channels > 4)	{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM channels]");		}
 
 	_SLIM_LAYER_HEADER _slim_lh{};
 
@@ -293,7 +289,10 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	}
 
 	Ref<Image> image = memnew(Image(_slim_lh._width, _slim_lh._height, 0, img_format, data));
-	image->generate_mipmaps();
+
+	if(_slim_lh._mipmaps>0){
+		image->generate_mipmaps();
+	}
 
 	if (r_error){*r_error = OK;}
 	return image;

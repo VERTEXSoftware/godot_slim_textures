@@ -34,7 +34,7 @@
 #include "compress/RICE.h"
 
 //Uncomment to enable texture loading logs
-#define SLIM_DEBUG_LOG
+//#define SLIM_DEBUG_LOG
 
 #pragma pack(push, 1)
 struct _SLIM_HEADER

@@ -350,6 +350,6 @@ String ResourceFormatSLIM::get_resource_type(const String &p_path) const {
 ResourceFormatSLIM::ResourceFormatSLIM() {
 	printf("This SLIM (Sleptsov Image Decoding Module)\n"
            "Version: %d.%d.%d.%d\n"
-           "Copyright (C) 2025 VERTEX Software by Sleptsov Vladimir\n\n",
+           "Copyright (C) 2026 VERTEX Software by Sleptsov Vladimir\n\n",
            SLIM_VERSION_MAJOR, SLIM_VERSION_MINOR, SLIM_VERSION_BUGFIX, SLIM_VERSION_HOTFIX);
 }

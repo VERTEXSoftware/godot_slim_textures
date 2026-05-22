@@ -41,6 +41,9 @@ struct _SLIM_HEADER
 {
 	uint64_t _magic;
 	uint32_t _version;
+	uint16_t _canvas_width;
+	uint16_t _canvas_height;
+	uint8_t  _canvas_channel;
 	uint16_t _layers;
 };
 #pragma pack(pop)

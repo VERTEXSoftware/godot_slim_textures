@@ -317,10 +317,8 @@ void  DECODE_REVOLVER(uint16_t mode, uint8_t* src, uint8_t* dest, uint32_t size)
 	//Decode by the revolver method
 	//--------------------------------------------------------------//
 
-	if (size<=0) 	{return;}
+	if (size==0) 	{return;}
 	if (mode==0)  	{return;}
-
-	uint32_t r_size = 256;
 
 	switch (mode)
 	{
@@ -329,29 +327,29 @@ void  DECODE_REVOLVER(uint16_t mode, uint8_t* src, uint8_t* dest, uint32_t size)
 			uint8_t* d = dest;
 			uint8_t* s = src;
 			uint8_t* e = s + size;
-			while (s < e) {*d++ = *s++;}
-			break;
+			while (s < e) { *d++ = *s++; }
+			return;
 		}	
 		case 2:
 		{
+			uint32_t r_size;
 			RLE_DECODE(src, size, dest, &r_size);
-			break;
-			
+			return;		
 		}
 		case 3:
 		{
-			RICE_DECODE(src, size, dest, r_size);
-			break;
+			RICE_DECODE(src, size, dest, 256);
+			return;
 		}
 		case 4:
 		{
-			SLDD_DECODE(src, size, dest, r_size);
-			break;
+			SLDD_DECODE(src, size, dest, 256);
+			return;
 		}		
 		case 5:
 		{
-			MASKARED_DECODE(src, size, dest, r_size);
-			break;
+			MASKARED_DECODE(src, size, dest, 256);
+			return;
 		}
 		default:
 		{

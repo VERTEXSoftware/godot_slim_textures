@@ -413,6 +413,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 	uint32_t qnt		= 0;
 	uint16_t meta_code	= 0;
+	double 	 level_qnt = 0;
 
 	uint64_t data_size = (uint64_t)(HEIGHT * WIDTH * CHANNEL);
 	Vector<uint8_t> data;
@@ -427,8 +428,10 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 			f->get_buffer((uint8_t*)&meta_code,  sizeof(uint16_t));
 
-			qnt 			= (uint32_t)(meta_code & 0x07u) << 1;
+			qnt 			= (uint32_t)(meta_code & 0x07u) << 1;	
+			level_qnt 		= 0.8673689 + 0.3571519 * ((double)qnt);
 			meta_code 		>>= 0x03u;
+			
 
 			const uint16_t packed 	= SLIM_META_CODE_LUT[meta_code];
     		const uint16_t v0 		= (packed >> 12) & 0x07u;
@@ -491,11 +494,10 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 					uint32_t chn3 			= (uint32_t)m_data[idxclr + 768u];
 
 					if (qnt > 0) {
-						const double level 		= 0.8673689 + 0.3571519 * ((double)qnt);
-						const uint32_t tchn0 	= (uint32_t)(chn0*qnt + level);
-						const uint32_t tchn1 	= (uint32_t)(chn1*qnt + level);
-						const uint32_t tchn2 	= (uint32_t)(chn2*qnt + level);
-						const uint32_t tchn3 	= (uint32_t)(chn3*qnt + level);
+						const uint32_t tchn0 	= (uint32_t)(chn0*qnt + level_qnt);
+						const uint32_t tchn1 	= (uint32_t)(chn1*qnt + level_qnt);
+						const uint32_t tchn2 	= (uint32_t)(chn2*qnt + level_qnt);
+						const uint32_t tchn3 	= (uint32_t)(chn3*qnt + level_qnt);
 
     					chn0 					= (uint8_t)(tchn0  > 255 ? 255 : tchn0);
 						chn1 					= (uint8_t)(tchn1  > 255 ? 255 : tchn1);

@@ -413,9 +413,9 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 	uint32_t qnt		= 0;
 	uint16_t meta_code	= 0;
-	double 	 level_qnt = 0;
+	double 	 level_qnt 	= 0;
 
-	uint64_t data_size = (uint64_t)(HEIGHT * WIDTH * CHANNEL);
+	const uint64_t data_size = (uint64_t)(HEIGHT * WIDTH * CHANNEL);
 	Vector<uint8_t> data;
 	data.resize(data_size);
 
@@ -433,18 +433,18 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 			meta_code 		>>= 0x03u;
 			
 
-			const uint16_t packed 	= SLIM_META_CODE_LUT[meta_code];
-    		const uint16_t v0 		= (packed >> 12) & 0x07u;
-    		const uint16_t v1 		= (packed >> 9)  & 0x07u;
-    		const uint16_t v2 		= (packed >> 6)  & 0x07u;
-    		const uint16_t v3 		= (packed >> 3)  & 0x07u;
-    		const uint16_t v4 		= packed         & 0x07u;
+			const uint16_t packed 		= SLIM_META_CODE_LUT[meta_code];
+    		const uint16_t v0 			= (packed >> 12) & 0x07u;
+    		const uint16_t v1 			= (packed >> 9)  & 0x07u;
+    		const uint16_t v2 			= (packed >> 6)  & 0x07u;
+    		const uint16_t v3 			= (packed >> 3)  & 0x07u;
+    		const uint16_t v4 			= packed         & 0x07u;
 
-			const bool ch0_org 	= (v0 > 0);
-			const bool ch1_org 	= (v1 > 0);
-			const bool ch2_org 	= (v2 > 0);
-			const bool ch3_org 	= (v3 > 0);
-			const bool idx_org 	= (v4 > 0);
+			const bool ch0_org 			= (v0 > 0);
+			const bool ch1_org 			= (v1 > 0);
+			const bool ch2_org 			= (v2 > 0);
+			const bool ch3_org 			= (v3 > 0);
+			const bool idx_org 			= (v4 > 0);
 
 			const uint8_t cm_size = ch0_org + ch1_org + ch2_org + ch3_org + idx_org;
 
@@ -488,10 +488,10 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 					++Cout;
 
-					uint32_t chn0			= (uint32_t)m_data[idxclr];
-					uint32_t chn1 			= (uint32_t)m_data[idxclr + 256u];
-					uint32_t chn2 			= (uint32_t)m_data[idxclr + 512u];
-					uint32_t chn3 			= (uint32_t)m_data[idxclr + 768u];
+					uint32_t chn0				= (uint32_t)m_data[idxclr];
+					uint32_t chn1 				= (uint32_t)m_data[idxclr + 256u];
+					uint32_t chn2 				= (uint32_t)m_data[idxclr + 512u];
+					uint32_t chn3 				= (uint32_t)m_data[idxclr + 768u];
 
 					if (qnt > 0) {
 						const uint32_t tchn0 	= (uint32_t)(chn0*qnt + level_qnt);

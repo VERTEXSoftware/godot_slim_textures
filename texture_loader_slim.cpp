@@ -472,6 +472,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 			DECODE_REVOLVER(v4, m_read + st_idx, m_data + 1024u, cmps_idx);
 
 			uint32_t Cout		= 0x0u;
+			uint8_t* out;
 
 			for (uint32_t y = 0; y < 16; ++y)
 			{
@@ -482,9 +483,9 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 					const uint32_t row		= blcY + y;
 
 					if (column >= WIDTH || row >= HEIGHT) { continue; }
-
-					const uint32_t index	= CHANNEL * (row * WIDTH + column);
-					const uint8_t* pix		= m_data + m_data[1024u + Cout];
+					
+					out							= ptr + CHANNEL * (row * WIDTH + column);
+					const uint8_t* pix			= m_data + m_data[1024u + Cout];
 
 					++Cout;
 
@@ -510,28 +511,28 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 						case Image::Image::FORMAT_L8:
 						{
-							ptr[index]		= (uint8_t)chn0;
+							*out		= (uint8_t)chn0;
 							break;
 						}
 						case Image::Image::FORMAT_LA8:
 						{
-							ptr[index]		= (uint8_t)chn0;
-							ptr[index + 1] 	= (uint8_t)chn3;
+							*out		= (uint8_t)chn0;
+							*(out+1)  	= (uint8_t)chn3;
 							break;
 						}
 						case Image::FORMAT_RGB8:
 						{
-							ptr[index]		= (uint8_t)chn0;
-							ptr[index + 1] 	= (uint8_t)chn1;
-							ptr[index + 2] 	= (uint8_t)chn2;
+							*out		= (uint8_t)chn0;
+							*(out+1) 	= (uint8_t)chn1;
+							*(out+2)  	= (uint8_t)chn2;
 							break;
 						}
 						case Image::FORMAT_RGBA8:
 						{
-							ptr[index]		= (uint8_t)chn0;
-							ptr[index + 1] 	= (uint8_t)chn1;
-							ptr[index + 2] 	= (uint8_t)chn2;
-							ptr[index + 3] 	= (uint8_t)chn3;
+							*out		= (uint8_t)chn0;
+							*(out+1)  	= (uint8_t)chn1;
+							*(out+2)  	= (uint8_t)chn2;
+							*(out+3)  	= (uint8_t)chn3;
 							break;
 						}
 						default:

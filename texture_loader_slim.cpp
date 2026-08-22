@@ -420,6 +420,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	data.resize(data_size);
 
 	uint8_t *ptr = data.ptrw();
+	uint8_t* out;
 
 	for (uint32_t blcY = 0; blcY < HEIGHT; blcY += 16)
 	{
@@ -472,7 +473,6 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 			DECODE_REVOLVER(v4, m_read + st_idx, m_data + 1024u, cmps_idx);
 
 			uint32_t Cout		= 0x0u;
-			uint8_t* out;
 
 			for (uint32_t y = 0; y < 16; ++y)
 			{

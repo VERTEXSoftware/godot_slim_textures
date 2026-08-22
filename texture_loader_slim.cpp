@@ -484,14 +484,14 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 					if (column >= WIDTH || row >= HEIGHT) { continue; }
 
 					const uint32_t index	= CHANNEL * (row * WIDTH + column);
-					const uint32_t idxclr	= m_data[1024u + Cout];
+					const uint8_t* pix		= m_data + m_data[1024u + Cout];
 
 					++Cout;
 
-					uint32_t chn0				= (uint32_t)m_data[idxclr];
-					uint32_t chn1 				= (uint32_t)m_data[idxclr + 256u];
-					uint32_t chn2 				= (uint32_t)m_data[idxclr + 512u];
-					uint32_t chn3 				= (uint32_t)m_data[idxclr + 768u];
+					uint32_t chn0				= (uint32_t)*pix;
+					uint32_t chn1 				= (uint32_t)*(pix+256u);
+					uint32_t chn2 				= (uint32_t)*(pix+512u);
+					uint32_t chn3 				= (uint32_t)*(pix+768u);
 
 					if (qnt > 0) {
 						const uint32_t tchn0 	= (uint32_t)(chn0*qnt + level_qnt);

@@ -78,16 +78,16 @@ SLDD_RESULT SLDD_ENCODE(uint8_t* buffer, uint32_t size, uint8_t* buffercomp, uin
 	const uint8_t first = *buffer;
 	const uint8_t* end	= buffer + size;
 
-	int leftCount			= 0x07u;
-	int rightCount			= 0x07u;
+	uint32_t leftCount		= 0x07u;
+	uint32_t rightCount		= 0x07u;
 	const bool leftc		= (first >> 7)	& 0x1u;
 	const bool rightc		= first			& 0x1u;
 
     for (uint8_t* p = buffer; p != end; ++p) {
         const uint8_t cur = *p;
 
-        int left_c= 0;
-        int right_c = 0;
+        uint32_t left_c = 0;
+        uint32_t right_c = 0;
         bool left_open = true;
         bool right_open = true;
 
@@ -110,12 +110,9 @@ SLDD_RESULT SLDD_ENCODE(uint8_t* buffer, uint32_t size, uint8_t* buffercomp, uin
         if (leftCount == 0 && rightCount == 0) {break;}
     }
 
-
-    if (leftCount + rightCount > 8) {
-        rightCount -= leftCount + rightCount - 8;
-        if (rightCount < 0) {rightCount = 0;}
-    }
-
+	if (leftCount + rightCount > 8) {
+		rightCount = (leftCount >= 8) ? 0 : (8 - leftCount);
+	}
 
 	uint32_t total 	= size * (0x08u - leftCount - rightCount);
 	*sizecomp 		= (total + 0x0Fu) >> 0x03u;
@@ -136,9 +133,11 @@ SLDD_RESULT SLDD_ENCODE(uint8_t* buffer, uint32_t size, uint8_t* buffercomp, uin
 		}
 	}
 	//Tails remover
-	while (*sizecomp > 1 && buffercomp[*sizecomp - 1] == 0) {
-		--*sizecomp;
-	}
+	uint32_t pos_tail = *sizecomp;
+    while (pos_tail > 1 && buffercomp[pos_tail - 1] == 0) {
+        --pos_tail;
+    }
+    *sizecomp = pos_tail;
 
     return SLDD_RESULT::SLDD_OK;
 }

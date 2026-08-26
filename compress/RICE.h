@@ -42,10 +42,13 @@ RICE_RESULT RICE_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint32_t* si
 {
     if (buf == NULL || bufc == NULL  || size <= 0) { return RICE_RESULT::RICE_ERROR_INVALID_PARAM; }
 
-    double avg = 0.0;
-    for (uint32_t i = 0; i < size; ++i){
-        avg += buf[i];
+    const uint8_t* end	= buf + size;
+    double avg          = 0.0;
+
+    for (uint8_t* p = buf; p < end; ++p) {
+        avg += *p;
     }
+
     avg /= double(size);
 
     uint8_t k = 0;
@@ -61,34 +64,30 @@ RICE_RESULT RICE_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint32_t* si
         else if (avg >= 2.0)  {k = 1;}
     }
 
-    bufc[0] = k;
+    *bufc = k;
     uint32_t bitPos = 8;
 
-    for (uint32_t i = 0; i < size; ++i)
-    {
-        uint32_t v = buf[i];
-        uint32_t q = v >> k;
-        uint32_t r = v & ((1u << k) - 1);
-
+    for (uint8_t* p = buf; p < end; ++p) {
+    
+        const uint32_t v = *p;
+        const uint32_t q = v >> k;
+        const uint32_t r = v & ((1u << k) - 1);
 
         for (uint32_t j = 0; j < q; ++j)
         {
-            uint32_t bytePos = bitPos >> 3;
-            bufc[bytePos] |= (1u << (7 - (bitPos & 7)));
-            bitPos++;
+            *(bufc + (bitPos >> 3)) |= (1u << (7 - (bitPos & 7)));
+            ++bitPos;
         }
-
 
         ++bitPos;
 
-
         for (int b = (int)k - 1; b >= 0; --b)
-        {
-            uint32_t bytePos = bitPos >> 3;
-            uint32_t bit = (r >> b) & 1u;
-            if (bit)
-                bufc[bytePos] |= (1u << (7 - (bitPos & 7)));
-            bitPos++;
+        {         
+            if ((r >> b) & 1u){
+                *(bufc + (bitPos >> 3)) |= (1u << (7 - (bitPos & 7)));
+            }
+                
+            ++bitPos;
         }
     }
 
@@ -102,20 +101,18 @@ RICE_RESULT RICE_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint32_t siz
 {
     if (buf == NULL || bufd == NULL || size == 0 || sized == 0) {return RICE_RESULT::RICE_ERROR_INVALID_PARAM; }
 
-    uint32_t bitPos = 8;
-    uint8_t k = buf[0];
-    const uint32_t totalBits = size * 8u;
+    uint32_t bitPos             = 8;
+    const uint8_t k             = *buf;
+    const uint32_t totalBits    = size * 8u;
+    const uint8_t* endd	        = bufd + sized;
 
     bool endOfData = false;
+    for (uint8_t* p = bufd; p < endd; ++p) {
 
-    for (uint32_t i = 0; i < sized; ++i)
-    {
-        if (bitPos >= totalBits) {
-            break;
-        }
+        if (bitPos >= totalBits) {break;}
 
         uint32_t q = 0;
-
+        uint32_t r = 0;
 
         while (true)
         {
@@ -124,8 +121,7 @@ RICE_RESULT RICE_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint32_t siz
                 break;
             }
 
-            uint32_t bytePos = bitPos >> 3;
-            uint32_t bit = (buf[bytePos] >> (7 - (bitPos & 7))) & 1u;
+            const uint32_t bit = (*(buf + (bitPos >> 3)) >> (7 - (bitPos & 7))) & 1u;
             ++bitPos;
 
             if (bit == 0) {break;}
@@ -134,7 +130,6 @@ RICE_RESULT RICE_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint32_t siz
 
         if (endOfData) {break;}
 
-        uint32_t r = 0;
         for (uint32_t b = 0; b < k; ++b)
         {
             if (bitPos >= totalBits) {
@@ -142,15 +137,14 @@ RICE_RESULT RICE_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint32_t siz
                 break;
             }
 
-            uint32_t bytePos = bitPos >> 3;
-            uint32_t bit = (buf[bytePos] >> (7 - (bitPos & 7))) & 1u;
+            const uint32_t bit = (*(buf + (bitPos >> 3)) >> (7 - (bitPos & 7))) & 1u;
             r = (r << 1) | bit;
             ++bitPos;
         }
 
         if (endOfData){break;}
 
-        bufd[i] = uint8_t((q << k) | r);
+        *p = uint8_t((q << k) | r);
     }
 
     return RICE_RESULT::RICE_OK;

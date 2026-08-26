@@ -123,10 +123,13 @@ MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint
 			}
 		}
 	}
+
 	//Tails remover
-	while (*sizec > 2 && bufc[*sizec - 1] == 0) {
-		--*sizec;
-	}
+    uint32_t pos_tail = *sizec;
+    while (pos_tail > 1 && bufc[pos_tail - 1] == 0) {
+        --pos_tail;
+    }
+    *sizec = pos_tail;
 
     return MASKARED_RESULT::SL_OK;
 }

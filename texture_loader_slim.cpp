@@ -434,7 +434,6 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 			level_qnt 		= 0.8673689 + 0.3571519 * ((double)qnt);
 			meta_code 		>>= 0x03u;
 			
-
 			const uint16_t packed 		= SLIM_META_CODE_LUT[meta_code];
     		const uint16_t v0 			= (packed >> 12) & 0x07u;
     		const uint16_t v1 			= (packed >> 9)  & 0x07u;

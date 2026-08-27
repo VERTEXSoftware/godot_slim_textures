@@ -419,8 +419,9 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	Vector<uint8_t> data;
 	data.resize(data_size);
 
-	uint8_t *ptr = data.ptrw();
+	uint8_t* ptr = data.ptrw();
 	uint8_t* out;
+	uint8_t* pix;
 
 	for (uint32_t blcY = 0; blcY < HEIGHT; blcY += 16)
 	{
@@ -485,20 +486,20 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 					if (column >= WIDTH || row >= HEIGHT) { continue; }
 					
 					out							= ptr + CHANNEL * (row * WIDTH + column);
-					const uint8_t* pix			= m_data + m_data[1024u + Cout];
+					pix							= m_data + m_data[1024u + Cout];
 
 					++Cout;
 
-					uint32_t chn0				= (uint32_t)*pix;
-					uint32_t chn1 				= (uint32_t)*(pix+256u);
-					uint32_t chn2 				= (uint32_t)*(pix+512u);
-					uint32_t chn3 				= (uint32_t)*(pix+768u);
+					uint8_t chn0				= *pix;
+					uint8_t chn1 				= *(pix+256u);
+					uint8_t chn2 				= *(pix+512u);
+					uint8_t chn3 				= *(pix+768u);
 
 					if (qnt > 0) {
-						const uint32_t tchn0 	= (uint32_t)(chn0*qnt + level_qnt);
-						const uint32_t tchn1 	= (uint32_t)(chn1*qnt + level_qnt);
-						const uint32_t tchn2 	= (uint32_t)(chn2*qnt + level_qnt);
-						const uint32_t tchn3 	= (uint32_t)(chn3*qnt + level_qnt);
+						const uint32_t tchn0 	= (uint32_t(chn0)*qnt + level_qnt);
+						const uint32_t tchn1 	= (uint32_t(chn1)*qnt + level_qnt);
+						const uint32_t tchn2 	= (uint32_t(chn2)*qnt + level_qnt);
+						const uint32_t tchn3 	= (uint32_t(chn3)*qnt + level_qnt);
 
     					chn0 					= (uint8_t)(tchn0  > 255 ? 255 : tchn0);
 						chn1 					= (uint8_t)(tchn1  > 255 ? 255 : tchn1);
@@ -511,28 +512,28 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 						case Image::Image::FORMAT_L8:
 						{
-							*out		= (uint8_t)chn0;
+							*out		= chn0;
 							break;
 						}
 						case Image::Image::FORMAT_LA8:
 						{
-							*out		= (uint8_t)chn0;
-							*(out+1)  	= (uint8_t)chn3;
+							*out		= chn0;
+							*(out+1)  	= chn3;
 							break;
 						}
 						case Image::FORMAT_RGB8:
 						{
-							*out		= (uint8_t)chn0;
-							*(out+1) 	= (uint8_t)chn1;
-							*(out+2)  	= (uint8_t)chn2;
+							*out		= chn0;
+							*(out+1) 	= chn1;
+							*(out+2)  	= chn2;
 							break;
 						}
 						case Image::FORMAT_RGBA8:
 						{
-							*out		= (uint8_t)chn0;
-							*(out+1)  	= (uint8_t)chn1;
-							*(out+2)  	= (uint8_t)chn2;
-							*(out+3)  	= (uint8_t)chn3;
+							*out		= chn0;
+							*(out+1)  	= chn1;
+							*(out+2)  	= chn2;
+							*(out+3)  	= chn3;
 							break;
 						}
 						default:

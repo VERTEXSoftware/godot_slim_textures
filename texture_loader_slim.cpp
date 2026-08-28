@@ -452,11 +452,11 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 			f->get_buffer(m_size,  cm_size);
 
 			uint8_t  cm_pos 			= 0x0u;
-			const uint32_t cmps_ch0 	= ch0_org ? 0x1u + ((uint32_t)m_size[cm_pos++]) : 0x0u;
-			const uint32_t cmps_ch1 	= ch1_org ? 0x1u + ((uint32_t)m_size[cm_pos++]) : 0x0u;
-			const uint32_t cmps_ch2 	= ch2_org ? 0x1u + ((uint32_t)m_size[cm_pos++]) : 0x0u;
-			const uint32_t cmps_ch3 	= ch3_org ? 0x1u + ((uint32_t)m_size[cm_pos++]) : 0x0u;
-			const uint32_t cmps_idx 	= idx_org ? 0x1u + ((uint32_t)m_size[cm_pos++]) : 0x0u;
+			const uint32_t cmps_ch0 	= ch0_org ? 0x1u + uint32_t(m_size[cm_pos++]) : 0x0u;
+			const uint32_t cmps_ch1 	= ch1_org ? 0x1u + uint32_t(m_size[cm_pos++]) : 0x0u;
+			const uint32_t cmps_ch2 	= ch2_org ? 0x1u + uint32_t(m_size[cm_pos++]) : 0x0u;
+			const uint32_t cmps_ch3 	= ch3_org ? 0x1u + uint32_t(m_size[cm_pos++]) : 0x0u;
+			const uint32_t cmps_idx 	= idx_org ? 0x1u + uint32_t(m_size[cm_pos++]) : 0x0u;
 
 			const uint32_t st_ch1		= cmps_ch0;
 			const uint32_t st_ch2		= st_ch1 + cmps_ch1;

@@ -43,7 +43,7 @@ struct _SLIM_HEADER
 	uint32_t _version;
 	uint16_t _canvas_width;
 	uint16_t _canvas_height;
-	uint8_t  _canvas_channel;
+	uint8_t  _canvas_code;
 	uint16_t _layers;
 };
 #pragma pack(pop)
@@ -58,7 +58,7 @@ struct _SLIM_LAYER_HEADER
 	uint16_t _y;
 	uint16_t _z;
 	uint32_t _flags;
-	uint8_t  _channel;
+	uint8_t  _code;
 	uint8_t  _name_size;
 	uint16_t _ext_size;
 };
@@ -379,13 +379,13 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	f->seek(pos + _slim_lh._name_size + _slim_lh._ext_size);
 	
 	if (_slim_lh._width == 0 || _slim_lh._height == 0) 	{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer size]");}
-	if (_slim_lh._channel <1 || _slim_lh._channel > 4)	{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");}
+	if (_slim_lh._code <1 || _slim_lh._code > 4)		{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");}
 
 	Image::Format img_format = Image::FORMAT_RGBA8;
 
 	const uint8_t gen_mipmap = (_slim_lh._flags >> 24) & 0x3;
 
-	switch (_slim_lh._channel)
+	switch (_slim_lh._code)
 	{
 		case 1:
 			img_format = Image::FORMAT_L8;
@@ -405,7 +405,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	
 	const uint32_t HEIGHT 	= (uint32_t)_slim_lh._height;
 	const uint32_t WIDTH 	= (uint32_t)_slim_lh._width;
-	const uint32_t CHANNEL 	= (uint32_t)_slim_lh._channel;
+	const uint32_t CHANNEL 	= (uint32_t)_slim_lh._code;
 
 	uint8_t m_data		[1280u]{};	//Curret	block memory
 	uint8_t m_read		[1280u]{};	//Read		block memory
@@ -536,7 +536,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 							break;
 						}
 						default:
-							ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Unsupported SLIM format: " + itos(_slim_lh._channel)+"]");
+							ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Unsupported SLIM format: " + itos(_slim_lh._code)+"]");
 					}
 				}
 			}

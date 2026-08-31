@@ -327,7 +327,8 @@ void  DECODE_REVOLVER(uint16_t mode, uint8_t* src, uint8_t* dest, uint32_t size)
 			uint8_t* d = dest;
 			uint8_t* s = src;
 			uint8_t* e = s + size;
-			while (s < e) { *d++ = *s++; }
+			while (s < e) 			{ *d++ = *s++; 	}
+			while (d < dest + 256) 	{ *d++ = 0; 	} 
 			return;
 		}	
 		case 2:
@@ -410,6 +411,12 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	uint8_t m_data		[1280u]{};	//Curret	block memory
 	uint8_t m_read		[1280u]{};	//Read		block memory
 	uint8_t m_size		[5u]{};		//Size 		blocks packed
+	
+	uint8_t* m_ch0 = m_data;
+	uint8_t* m_ch1 = m_data + 256u;
+	uint8_t* m_ch2 = m_data + 512u;
+	uint8_t* m_ch3 = m_data + 768u;
+	uint8_t* m_idx = m_data + 1024u;
 
 	uint32_t qnt		= 0;
 	uint16_t meta_code	= 0;
@@ -421,7 +428,6 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 	uint8_t* ptr = data.ptrw();
 	uint8_t* out;
-	uint8_t* pix;
 
 	for (uint32_t blcY = 0; blcY < HEIGHT; blcY += 16)
 	{
@@ -466,11 +472,11 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 			f->get_buffer(m_read,  st_size);
 
-			DECODE_REVOLVER(v0, m_read, m_data, cmps_ch0);
-			DECODE_REVOLVER(v1, m_read + st_ch1, m_data + 256u, cmps_ch1);
-			DECODE_REVOLVER(v2, m_read + st_ch2, m_data + 512u, cmps_ch2);
-			DECODE_REVOLVER(v3, m_read + st_ch3, m_data + 768u, cmps_ch3);
-			DECODE_REVOLVER(v4, m_read + st_idx, m_data + 1024u, cmps_idx);
+			DECODE_REVOLVER(v0, m_read, m_ch0, cmps_ch0);
+			DECODE_REVOLVER(v1, m_read + st_ch1, m_ch1, cmps_ch1);
+			DECODE_REVOLVER(v2, m_read + st_ch2, m_ch2, cmps_ch2);
+			DECODE_REVOLVER(v3, m_read + st_ch3, m_ch3, cmps_ch3);
+			DECODE_REVOLVER(v4, m_read + st_idx, m_idx, cmps_idx);
 
 			uint32_t Cout		= 0x0u;
 
@@ -485,14 +491,12 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 					if (column >= WIDTH || row >= HEIGHT) { continue; }
 					
 					out							= ptr + CHANNEL * (row * WIDTH + column);
-					pix							= m_data + m_data[1024u + Cout];
+					const uint32_t idx 			= *(m_idx + Cout++);
 
-					++Cout;
-
-					uint8_t chn0				= *pix;
-					uint8_t chn1 				= *(pix+256u);
-					uint8_t chn2 				= *(pix+512u);
-					uint8_t chn3 				= *(pix+768u);
+					uint8_t chn0				= *(m_ch0+idx);
+					uint8_t chn1 				= *(m_ch1+idx);
+					uint8_t chn2 				= *(m_ch2+idx);
+					uint8_t chn3 				= *(m_ch3+idx);
 
 					if (qnt > 0) {
 						const uint32_t tchn0 	= (uint32_t(chn0)*qnt + level_qnt);

@@ -324,11 +324,12 @@ void  DECODE_REVOLVER(uint16_t mode, uint8_t* src, uint8_t* dest, uint32_t size)
 	{
 		case 1:
 		{
-			uint8_t* d = dest;
-			uint8_t* s = src;
-			uint8_t* e = s + size;
-			while (s < e) 			{ *d++ = *s++; 	}
-			while (d < dest + 256) 	{ *d++ = 0; 	} 
+			uint8_t* d 		= dest;
+			uint8_t* s 		= src;
+			uint8_t* e 		= s + size;
+			uint8_t* en 	= dest + 256u;
+			while (s < e) 	{ *d++ = *s++; 	}
+			while (d < en) 	{ *d++ = 0x00u; } 
 			return;
 		}	
 		case 2:
@@ -339,17 +340,17 @@ void  DECODE_REVOLVER(uint16_t mode, uint8_t* src, uint8_t* dest, uint32_t size)
 		}
 		case 3:
 		{
-			RICE_DECODE(src, size, dest, 256);
+			RICE_DECODE(src, size, dest, 256u);
 			return;
 		}
 		case 4:
 		{
-			SLDD_DECODE(src, size, dest, 256);
+			SLDD_DECODE(src, size, dest, 256u);
 			return;
 		}		
 		case 5:
 		{
-			MASKARED_DECODE(src, size, dest, 256);
+			MASKARED_DECODE(src, size, dest, 256u);
 			return;
 		}
 		default:

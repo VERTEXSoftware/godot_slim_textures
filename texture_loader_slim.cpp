@@ -505,10 +505,10 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 						const uint32_t tchn2 	= (uint32_t(chn2)*qnt + level_qnt);
 						const uint32_t tchn3 	= (uint32_t(chn3)*qnt + level_qnt);
 
-    					chn0 					= (uint8_t)(tchn0  > 255 ? 255 : tchn0);
-						chn1 					= (uint8_t)(tchn1  > 255 ? 255 : tchn1);
-						chn2 					= (uint8_t)(tchn2  > 255 ? 255 : tchn2);
-						chn3 					= (uint8_t)(tchn3  > 255 ? 255 : tchn3);
+    					chn0 					= uint8_t(tchn0  > 255 ? 255 : tchn0);
+						chn1 					= uint8_t(tchn1  > 255 ? 255 : tchn1);
+						chn2 					= uint8_t(tchn2  > 255 ? 255 : tchn2);
+						chn3 					= uint8_t(tchn3  > 255 ? 255 : tchn3);
 					}
 
 					switch (img_format)
@@ -541,18 +541,18 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 							break;
 						}
 						default:
+						{
 							ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Unsupported SLIM format: " + itos(_slim_lh._code)+"]");
+						}
 					}
 				}
 			}
 		}
 	}
+	
+	Ref<Image> image = Image::create_from_data(_slim_lh._width, _slim_lh._height, false, img_format, data);
 
-	Ref<Image> image = memnew(Image(_slim_lh._width, _slim_lh._height, 0, img_format, data));
-
-	if(gen_mipmap!=1){
-		image->generate_mipmaps();
-	}
+	if(gen_mipmap!=1){ image->generate_mipmaps(); }
 
 	if (r_error){*r_error = OK;}
 	return image;
@@ -578,10 +578,6 @@ Ref<Resource> ResourceFormatSLIM::load(const String &p_path, const String &p_ori
 		uint64_t end_time = OS::get_singleton()->get_ticks_usec();
 		double ms = (end_time - start_time) / 1000.0;
 	#endif
-
-	if (img.is_null()) {
-		return Ref<Resource>();
-	}
 
 	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
 	

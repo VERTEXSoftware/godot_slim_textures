@@ -380,8 +380,8 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 	f->seek(pos + _slim_lh._name_size + _slim_lh._ext_size);
 	
-	if (_slim_lh._width == 0 || _slim_lh._height == 0) 	{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer size]");}
-	if (_slim_lh._code <1 || _slim_lh._code > 4)		{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");}
+	if (_slim_lh._width == 0 || _slim_lh._height == 0) 		{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer size]");}
+	if (_slim_lh._code <1 || _slim_lh._code > 4)			{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");}
 
 	Image::Format img_format = Image::FORMAT_RGBA8;
 
@@ -577,15 +577,10 @@ Ref<Resource> ResourceFormatSLIM::load(const String &p_path, const String &p_ori
 	#ifdef SLIM_DEBUG_LOG
 		uint64_t end_time = OS::get_singleton()->get_ticks_usec();
 		double ms = (end_time - start_time) / 1000.0;
-	#endif
-
-	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
-	
-	#ifdef SLIM_DEBUG_LOG
 		printf("[SLIM_LOAD_OK][%.3f ms][%s]\n", ms, p_path.utf8().get_data());
 	#endif
 	
-	return texture;
+	return ImageTexture::create_from_image(img);
 }
 
 void ResourceFormatSLIM::get_recognized_extensions(List<String> *p_extensions) const {

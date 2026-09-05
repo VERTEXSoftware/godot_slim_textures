@@ -479,7 +479,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 			DECODE_REVOLVER(v3, m_read + st_ch3, m_ch3, cmps_ch3);
 			DECODE_REVOLVER(v4, m_read + st_idx, m_idx, cmps_idx);
 
-			uint32_t Cout		= 0x0u;
+			uint32_t Cout				= 0x0u;
 
 			for (uint32_t y = 0; y < 16; ++y)
 			{
@@ -500,11 +500,10 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 					uint8_t chn3 				= *(m_ch3+idx);
 
 					if (qnt > 0) {
-						const uint32_t tchn0 	= (uint32_t(chn0)*qnt + level_qnt);
-						const uint32_t tchn1 	= (uint32_t(chn1)*qnt + level_qnt);
-						const uint32_t tchn2 	= (uint32_t(chn2)*qnt + level_qnt);
-						const uint32_t tchn3 	= (uint32_t(chn3)*qnt + level_qnt);
-
+						const uint32_t tchn0 	= (uint32_t(chn0) * qnt + level_qnt);
+						const uint32_t tchn1 	= (uint32_t(chn1) * qnt + level_qnt);
+						const uint32_t tchn2 	= (uint32_t(chn2) * qnt + level_qnt);
+						const uint32_t tchn3 	= (uint32_t(chn3) * qnt + level_qnt);
     					chn0 					= uint8_t(tchn0  > 255 ? 255 : tchn0);
 						chn1 					= uint8_t(tchn1  > 255 ? 255 : tchn1);
 						chn2 					= uint8_t(tchn2  > 255 ? 255 : tchn2);

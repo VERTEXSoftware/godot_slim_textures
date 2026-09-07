@@ -385,7 +385,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 	Image::Format img_format = Image::FORMAT_RGBA8;
 
-	const uint8_t gen_mipmap = (_slim_lh._flags >> 24) & 0x3;
+	const uint8_t gen_mipmap = (_slim_lh._flags >> 24u) & 0x3u;
 
 	switch (_slim_lh._code)
 	{
@@ -419,9 +419,9 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	uint8_t* m_ch3 = m_data + 768u;
 	uint8_t* m_idx = m_data + 1024u;
 
-	uint32_t qnt		= 0;
-	uint16_t meta_code	= 0;
-	double 	 level_qnt 	= 0;
+	uint32_t qnt		= 0u;
+	uint16_t meta_code	= 0u;
+	double 	 level_qnt 	= 0u;
 
 	const uint64_t data_size = (uint64_t)(HEIGHT * WIDTH * CHANNEL);
 	Vector<uint8_t> data;
@@ -430,29 +430,29 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	uint8_t* ptr = data.ptrw();
 	uint8_t* out;
 
-	for (uint32_t blcY = 0; blcY < HEIGHT; blcY += 16)
+	for (uint32_t blcY = 0u; blcY < HEIGHT; blcY += 16u)
 	{
-		for (uint32_t blcX = 0; blcX < WIDTH; blcX += 16)
+		for (uint32_t blcX = 0u; blcX < WIDTH; blcX += 16u)
 		{
 
 			f->get_buffer((uint8_t*)&meta_code,  sizeof(uint16_t));
 
-			qnt 			= (uint32_t)(meta_code & 0x07u) << 1;	
+			qnt 			= (uint32_t)(meta_code & 0x07u) << 1u;	
 			level_qnt 		= 0.8673689 + 0.3571519 * ((double)qnt);
 			meta_code 		>>= 0x03u;
 			
 			const uint16_t packed 		= *(SLIM_META_CODE_LUT + meta_code);
-    		const uint16_t v0 			= (packed >> 12) & 0x07u;
-    		const uint16_t v1 			= (packed >> 9)  & 0x07u;
-    		const uint16_t v2 			= (packed >> 6)  & 0x07u;
-    		const uint16_t v3 			= (packed >> 3)  & 0x07u;
-    		const uint16_t v4 			= packed         & 0x07u;
+    		const uint16_t v0 			= (packed >> 12u) & 0x07u;
+    		const uint16_t v1 			= (packed >> 9u)  & 0x07u;
+    		const uint16_t v2 			= (packed >> 6u)  & 0x07u;
+    		const uint16_t v3 			= (packed >> 3u)  & 0x07u;
+    		const uint16_t v4 			= packed          & 0x07u;
 
-			const bool ch0_org 			= (v0 > 0);
-			const bool ch1_org 			= (v1 > 0);
-			const bool ch2_org 			= (v2 > 0);
-			const bool ch3_org 			= (v3 > 0);
-			const bool idx_org 			= (v4 > 0);
+			const bool ch0_org 			= (v0 > 0u);
+			const bool ch1_org 			= (v1 > 0u);
+			const bool ch2_org 			= (v2 > 0u);
+			const bool ch3_org 			= (v3 > 0u);
+			const bool idx_org 			= (v4 > 0u);
 
 			const uint8_t cm_size = ch0_org + ch1_org + ch2_org + ch3_org + idx_org;
 
@@ -481,9 +481,9 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 			uint32_t Cout				= 0x0u;
 
-			for (uint32_t y = 0; y < 16; ++y)
+			for (uint32_t y = 0u; y < 16u; ++y)
 			{
-				for (uint32_t x = 0; x < 16; ++x)
+				for (uint32_t x = 0u; x < 16u; ++x)
 				{
 
 					const uint32_t column	= blcX + x;
@@ -499,15 +499,15 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 					uint8_t chn2 				= *(m_ch2+idx);
 					uint8_t chn3 				= *(m_ch3+idx);
 
-					if (qnt > 0) {
+					if (qnt > 0u) {
 						const uint32_t tchn0 	= (uint32_t(chn0) * qnt + level_qnt);
 						const uint32_t tchn1 	= (uint32_t(chn1) * qnt + level_qnt);
 						const uint32_t tchn2 	= (uint32_t(chn2) * qnt + level_qnt);
 						const uint32_t tchn3 	= (uint32_t(chn3) * qnt + level_qnt);
-    					chn0 					= uint8_t(tchn0  > 255 ? 255 : tchn0);
-						chn1 					= uint8_t(tchn1  > 255 ? 255 : tchn1);
-						chn2 					= uint8_t(tchn2  > 255 ? 255 : tchn2);
-						chn3 					= uint8_t(tchn3  > 255 ? 255 : tchn3);
+    					chn0 					= uint8_t(tchn0  > 255u ? 255u : tchn0);
+						chn1 					= uint8_t(tchn1  > 255u ? 255u : tchn1);
+						chn2 					= uint8_t(tchn2  > 255u ? 255u : tchn2);
+						chn3 					= uint8_t(tchn3  > 255u ? 255u : tchn3);
 					}
 
 					switch (img_format)
@@ -521,22 +521,22 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 						case Image::Image::FORMAT_LA8:
 						{
 							*out		= chn0;
-							*(out+1)  	= chn3;
+							*(out+1u)  	= chn3;
 							break;
 						}
 						case Image::FORMAT_RGB8:
 						{
 							*out		= chn0;
-							*(out+1) 	= chn1;
-							*(out+2)  	= chn2;
+							*(out+1u) 	= chn1;
+							*(out+2u)  	= chn2;
 							break;
 						}
 						case Image::FORMAT_RGBA8:
 						{
 							*out		= chn0;
-							*(out+1)  	= chn1;
-							*(out+2)  	= chn2;
-							*(out+3)  	= chn3;
+							*(out+1u)  	= chn1;
+							*(out+2u)  	= chn2;
+							*(out+3u)  	= chn3;
 							break;
 						}
 						default:

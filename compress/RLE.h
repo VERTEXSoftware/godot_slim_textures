@@ -40,14 +40,14 @@ uint32_t RLE_VERSION(){ return RLE_VER; }
 
 RLE_RESULT RLE_ENCODE(uint8_t* data, uint32_t Length, uint8_t* outdata, uint32_t* counter)
 {
-    if (data == NULL || outdata == NULL  || Length <= 0) { return RLE_RESULT::RLE_ERROR_INVALID_PARAM; }
+    if (data == NULL || outdata == NULL  || Length == 0) { return RLE_RESULT::RLE_ERROR_INVALID_PARAM; }
 
-	uint32_t idx = 0;
-	uint32_t i = 0;
+	uint32_t idx 	= 0;
+	uint32_t i 		= 0;
 
 	while (i < Length) {
-		uint32_t cnt = 1;
-		while (i + cnt < Length && data[i + cnt] == data[i] && cnt < 127) { ++cnt; }
+		uint32_t cnt = 1u;
+		while (i + cnt < Length && data[i + cnt] == data[i] && cnt < 127u) { ++cnt; }
 
 		if (cnt > 1) {
 			outdata[idx++] = uint8_t(cnt);
@@ -56,7 +56,7 @@ RLE_RESULT RLE_ENCODE(uint8_t* data, uint32_t Length, uint8_t* outdata, uint32_t
 		}
 		else {
 			cnt = 0;
-			while (i + cnt < Length && (i + cnt + 1 >= Length || data[i + cnt] != data[i + cnt + 1]) && cnt < 127) { ++cnt; }
+			while (i + cnt < Length && (i + cnt + 1u >= Length || data[i + cnt] != data[i + cnt + 1]) && cnt < 127u) { ++cnt; }
 			outdata[idx++] = uint8_t(~cnt + 1);
 			for (uint32_t j = 0; j < cnt; ++j) { outdata[idx++] = data[i + j]; }
 			i += cnt;
@@ -69,25 +69,31 @@ RLE_RESULT RLE_ENCODE(uint8_t* data, uint32_t Length, uint8_t* outdata, uint32_t
 
 RLE_RESULT RLE_DECODE(uint8_t* data, uint32_t Length, uint8_t* outdata, uint32_t* outLength)
 {
-    if (data == NULL || outdata == NULL  || Length <= 0 ) { return RLE_RESULT::RLE_ERROR_INVALID_PARAM; }
+    if (data == NULL || outdata == NULL  || Length == 0 ) { return RLE_RESULT::RLE_ERROR_INVALID_PARAM; }
 
-	uint32_t idx = 0;
-	uint32_t i = 0;
+	int8_t cnt		= 0; 
+	uint32_t count	= 0;
 
-	while (i < Length) {
-		int8_t cnt = int8_t(data[i++]);
+	uint8_t* pdata 	= data;
+	uint8_t* pend 	= data + Length;
+	uint8_t* out 	= outdata;
+
+	while (pdata < pend) {
+		cnt = int8_t(*pdata++);
 
 		if (cnt > 0) {
-			for (uint32_t j = 0; j < uint32_t(cnt); ++j) { outdata[idx++] = data[i]; }
-			++i;
+			count = uint32_t(cnt);
+			for (uint32_t j = 0; j < count; ++j) { *out++ = *pdata; }
+			++pdata;
 		}
 		else {
-			for (uint32_t j = 0; j < uint32_t(~cnt + 1); ++j) {
-				outdata[idx++] = data[i++];
+			count = uint32_t(~cnt + 1);
+			for (uint32_t j = 0; j < count; ++j) {
+				*out++ = *pdata++;
 			}
 		}
 	}
-	*outLength = idx;
+	*outLength = pdata - data;
 	return RLE_RESULT::RLE_OK;
 }
 

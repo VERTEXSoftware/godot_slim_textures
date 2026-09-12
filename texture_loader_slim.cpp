@@ -317,8 +317,7 @@ void  DECODE_REVOLVER(uint16_t mode, uint8_t* src, uint8_t* dest, uint32_t size)
 	//Decode by the revolver method
 	//--------------------------------------------------------------//
 
-	if (size==0) 	{return;}
-	if (mode==0)  	{return;}
+	if (size==0 || mode==0) {return;}
 
 	switch (mode)
 	{
@@ -390,40 +389,48 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	switch (_slim_lh._code)
 	{
 		case 1:
+		{
 			img_format = Image::FORMAT_L8;
 			break;
+		}
 		case 2:
+		{
 			img_format = Image::FORMAT_LA8;
 			break;
+		}
 		case 3:
+		{
 			img_format = Image::FORMAT_RGB8;
 			break;
+		}
 		case 4:
+		{
 			img_format = Image::FORMAT_RGBA8;
 			break;
+		}
 		default:
+		{
 			ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");
+		}
 	}
 	
 	const uint32_t HEIGHT 	= (uint32_t)_slim_lh._height;
 	const uint32_t WIDTH 	= (uint32_t)_slim_lh._width;
-	const uint32_t CHANNEL 	= (uint32_t)_slim_lh._code;
+	const uint32_t CODE 	= (uint32_t)_slim_lh._code;
 
-	uint8_t m_data		[1280u]{};	//Curret	block memory
-	uint8_t m_read		[1280u]{};	//Read		block memory
-	uint8_t m_size		[5u]{};		//Size 		blocks packed
+	uint8_t m_data	[2560u]{};	//IT IS LITERALLY A TRASH CAN
 	
-	uint8_t* m_ch0 = m_data;
-	uint8_t* m_ch1 = m_data + 256u;
-	uint8_t* m_ch2 = m_data + 512u;
-	uint8_t* m_ch3 = m_data + 768u;
-	uint8_t* m_idx = m_data + 1024u;
+	uint8_t* m_ch0 = m_data + 1280u;
+	uint8_t* m_ch1 = m_data + 1536u;
+	uint8_t* m_ch2 = m_data + 1792u;
+	uint8_t* m_ch3 = m_data + 2048u;
+	uint8_t* m_idx = m_data + 2304u;
 
 	uint32_t qnt		= 0u;
 	uint16_t meta_code	= 0u;
 	double 	 level_qnt 	= 0u;
 
-	const uint64_t data_size = (uint64_t)(HEIGHT * WIDTH * CHANNEL);
+	const uint64_t data_size = (uint64_t)(HEIGHT * WIDTH * CODE);
 	Vector<uint8_t> data;
 	data.resize(data_size);
 
@@ -456,14 +463,14 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 			const uint8_t cm_size = ch0_org + ch1_org + ch2_org + ch3_org + idx_org;
 
-			f->get_buffer(m_size,  cm_size);
+			f->get_buffer(m_data,  cm_size);
 
 			uint8_t  cm_pos 			= 0x0u;
-			const uint32_t cmps_ch0 = ch0_org ? 0x1u + uint32_t(*(m_size + cm_pos++)) : 0x0u;
-			const uint32_t cmps_ch1 = ch1_org ? 0x1u + uint32_t(*(m_size + cm_pos++)) : 0x0u;
-			const uint32_t cmps_ch2 = ch2_org ? 0x1u + uint32_t(*(m_size + cm_pos++)) : 0x0u;
-			const uint32_t cmps_ch3 = ch3_org ? 0x1u + uint32_t(*(m_size + cm_pos++)) : 0x0u;
-			const uint32_t cmps_idx = idx_org ? 0x1u + uint32_t(*(m_size + cm_pos++)) : 0x0u;
+			const uint32_t cmps_ch0 = ch0_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			const uint32_t cmps_ch1 = ch1_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			const uint32_t cmps_ch2 = ch2_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			const uint32_t cmps_ch3 = ch3_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			const uint32_t cmps_idx = idx_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
 			
 			const uint32_t st_ch1		= cmps_ch0;
 			const uint32_t st_ch2		= st_ch1 + cmps_ch1;
@@ -471,13 +478,13 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 			const uint32_t st_idx		= st_ch3 + cmps_ch3;
 			const uint32_t st_size		= st_idx + cmps_idx;
 
-			f->get_buffer(m_read,  st_size);
+			f->get_buffer(m_data,  st_size);
 
-			DECODE_REVOLVER(v0, m_read, m_ch0, cmps_ch0);
-			DECODE_REVOLVER(v1, m_read + st_ch1, m_ch1, cmps_ch1);
-			DECODE_REVOLVER(v2, m_read + st_ch2, m_ch2, cmps_ch2);
-			DECODE_REVOLVER(v3, m_read + st_ch3, m_ch3, cmps_ch3);
-			DECODE_REVOLVER(v4, m_read + st_idx, m_idx, cmps_idx);
+			DECODE_REVOLVER(v0, m_data, m_ch0, cmps_ch0);
+			DECODE_REVOLVER(v1, m_data + st_ch1, m_ch1, cmps_ch1);
+			DECODE_REVOLVER(v2, m_data + st_ch2, m_ch2, cmps_ch2);
+			DECODE_REVOLVER(v3, m_data + st_ch3, m_ch3, cmps_ch3);
+			DECODE_REVOLVER(v4, m_data + st_idx, m_idx, cmps_idx);
 
 			uint32_t Cout				= 0x0u;
 
@@ -491,7 +498,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 					if (column >= WIDTH || row >= HEIGHT) { continue; }
 					
-					out							= ptr + CHANNEL * (row * WIDTH + column);
+					out							= ptr + CODE * (row * WIDTH + column);
 					const uint32_t idx 			= *(m_idx + Cout++);
 
 					uint8_t chn0				= *(m_ch0+idx);

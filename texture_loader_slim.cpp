@@ -426,11 +426,11 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	uint8_t* m_ch3 = m_data + 2048u;
 	uint8_t* m_idx = m_data + 2304u;
 
-	uint32_t qnt		= 0u;
-	uint16_t meta_code	= 0u;
-	double 	 level_qnt 	= 0u;
+	uint32_t qnt;
+	uint16_t meta_code;
+	double 	 level_qnt;
 
-	const uint64_t data_size = (uint64_t)(HEIGHT * WIDTH * CODE);
+	const uint64_t data_size = uint64_t(HEIGHT * WIDTH * CODE);
 	Vector<uint8_t> data;
 	data.resize(data_size);
 
@@ -444,8 +444,8 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 			f->get_buffer((uint8_t*)&meta_code,  sizeof(uint16_t));
 
-			qnt 			= (uint32_t)(meta_code & 0x07u) << 1u;	
-			level_qnt 		= 0.8673689 + 0.3571519 * ((double)qnt);
+			qnt 			= uint32_t(meta_code & 0x07u) << 1u;	
+			level_qnt 		= 0.8673689 + 0.3571519 * double(qnt);
 			meta_code 		>>= 0x03u;
 			
 			const uint16_t packed 		= *(SLIM_META_CODE_LUT + meta_code);

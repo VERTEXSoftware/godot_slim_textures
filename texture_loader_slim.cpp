@@ -418,13 +418,12 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	const uint32_t WIDTH 	= (uint32_t)_slim_lh._width;
 	const uint32_t CODE 	= (uint32_t)_slim_lh._code;
 
-	uint8_t m_data	[2560u]{};	//IT IS LITERALLY A TRASH CAN
-	
-	uint8_t* m_ch0 = m_data + 1280u;
-	uint8_t* m_ch1 = m_data + 1536u;
-	uint8_t* m_ch2 = m_data + 1792u;
-	uint8_t* m_ch3 = m_data + 2048u;
-	uint8_t* m_idx = m_data + 2304u;
+	uint8_t  m_data			[2560u]{};	//IT IS LITERALLY A TRASH CAN	
+	uint8_t* m_ch0 			= m_data + 1280u;
+	uint8_t* m_ch1 			= m_data + 1536u;
+	uint8_t* m_ch2 			= m_data + 1792u;
+	uint8_t* m_ch3 			= m_data + 2048u;
+	uint8_t* m_idx 			= m_data + 2304u;
 
 	uint32_t qnt;
 	uint16_t meta_code;

@@ -444,9 +444,9 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 			f->get_buffer((uint8_t*)&meta_code,  sizeof(uint16_t));
 
-			qnt 			= uint32_t(meta_code & 0x07u) << 1u;	
-			level_qnt 		= 0.8673689 + 0.3571519 * double(qnt);
-			meta_code 		>>= 0x03u;
+			qnt 						= uint32_t(meta_code & 0x07u) << 1u;	
+			level_qnt 					= 0.8673689 + 0.3571519 * double(qnt);
+			meta_code 					>>= 0x03u;
 			
 			const uint16_t packed 		= *(SLIM_META_CODE_LUT + meta_code);
     		const uint16_t v0 			= (packed >> 12u) & 0x07u;
@@ -461,16 +461,16 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 			const bool ch3_org 			= (v3 > 0u);
 			const bool idx_org 			= (v4 > 0u);
 
-			const uint8_t cm_size = ch0_org + ch1_org + ch2_org + ch3_org + idx_org;
+			const uint8_t cm_size 		= ch0_org + ch1_org + ch2_org + ch3_org + idx_org;
 
 			f->get_buffer(m_data,  cm_size);
 
-			uint8_t  cm_pos 		= 0x0u;
-			const uint32_t cmps_ch0 = ch0_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
-			const uint32_t cmps_ch1 = ch1_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
-			const uint32_t cmps_ch2 = ch2_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
-			const uint32_t cmps_ch3 = ch3_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
-			const uint32_t cmps_idx = idx_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			uint8_t  cm_pos 			= 0x0u;
+			const uint32_t cmps_ch0 	= ch0_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			const uint32_t cmps_ch1 	= ch1_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			const uint32_t cmps_ch2 	= ch2_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			const uint32_t cmps_ch3 	= ch3_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			const uint32_t cmps_idx 	= idx_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
 			
 			const uint32_t st_ch1		= cmps_ch0;
 			const uint32_t st_ch2		= st_ch1 + cmps_ch1;

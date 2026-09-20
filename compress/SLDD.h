@@ -165,7 +165,7 @@ SLDD_RESULT SLDD_DECODE(uint8_t* buffer, uint32_t size, uint8_t* bufferde, uint3
     if (rightCount > 0 && rightc) {chr |= ((uint8_t)((1u << rightCount) - 1u));}
 
 	uint32_t step = 0;
-//&& p < endp error!
+
 	for (uint8_t* d = bufferde, *p = pstr; d < endd; ++d) {
 		*d = chr;
 		for (uint8_t bit = mstart; bit > mend && p < endp; bit >>= 0x01u) {

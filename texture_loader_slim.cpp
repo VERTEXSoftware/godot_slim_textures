@@ -24,10 +24,11 @@
 #define SLIM_STREAM_IMP
 #define SLEP_SLDD_IMP
 #define SLEP_MASKARED_IMP
+#define SLEP_MASKARED_EXP
 #define RLE_IMP
 #define RICE_IMP
 
-//Custom Compression
+//Custom Compression Algorithm
 #include "compress/SLDD.h"
 #include "compress/MASKARED.h"
 #include "compress/RLE.h"
@@ -37,31 +38,33 @@
 //#define SLIM_DEBUG_LOG
 
 #pragma pack(push, 1)
-struct _SLIM_HEADER
+typedef struct
 {
 	uint64_t _magic;
 	uint32_t _version;
 	uint16_t _canvas_width;
 	uint16_t _canvas_height;
-	uint8_t  _canvas_code;
 	uint16_t _layers;
-};
+	uint8_t  _canvas_code;
+	uint8_t  _reserved[5];
+} _SLIM_HEADER;
 #pragma pack(pop)
 
 #pragma pack(push, 1)
-struct _SLIM_LAYER_HEADER
+typedef struct
 {
-	uint16_t _id;
-	uint16_t _width;
-	uint16_t _height;
-	uint16_t _x;
-	uint16_t _y;
-	uint16_t _z;
-	uint32_t _flags;
-	uint8_t  _code;
-	uint8_t  _name_size;
-	uint16_t _ext_size;
-};
+    uint32_t _flags;
+    uint16_t _id;
+    uint16_t _width;
+    uint16_t _height;
+    uint16_t _x;
+    uint16_t _y;
+    uint16_t _z;
+    uint16_t _ext_size;
+    uint8_t  _code;
+    uint8_t  _name_size;
+    uint8_t  _reserved[4];
+} _SLIM_LAYER_HEADER;
 #pragma pack(pop)
 
 
@@ -326,7 +329,7 @@ inline void  DECODE_REVOLVER(uint16_t mode, uint8_t* src, uint8_t* dest, uint32_
 			uint8_t* d 		= dest;
 			uint8_t* s 		= src;
 			uint8_t* e 		= s + size;
-			uint8_t* en 	= dest + 256u;
+			uint8_t* en 	= dest + 0x100u;
 			while (s < e) 	{ *d++ = *s++; 	}
 			while (d < en) 	{ *d++ = 0x00u; } 
 			return;
@@ -339,17 +342,17 @@ inline void  DECODE_REVOLVER(uint16_t mode, uint8_t* src, uint8_t* dest, uint32_
 		}
 		case 3:
 		{
-			RICE_DECODE(src, size, dest, 256u);
+			RICE_DECODE(src, size, dest, 0x100u);
 			return;
 		}
 		case 4:
 		{
-			SLDD_DECODE(src, size, dest, 256u);
+			SLDD_DECODE(src, size, dest, 0x100u);
 			return;
 		}		
 		case 5:
 		{
-			MASKARED_DECODE(src, size, dest, 256u);
+			MASKARED_DECODE(src, size, dest, 0x100u);
 			return;
 		}
 		default:
@@ -379,31 +382,31 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 
 	f->seek(pos + _slim_lh._name_size + _slim_lh._ext_size);
 	
-	if (_slim_lh._width == 0 || _slim_lh._height == 0) 		{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer size]");}
-	if (_slim_lh._code <1 || _slim_lh._code > 4)			{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");}
+	if (_slim_lh._width == 0x00u || _slim_lh._height == 0x00u) 		{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer size]");}
+	if (_slim_lh._code < 0x01u || _slim_lh._code > 0x04u)			{ERR_FAIL_V_MSG(Ref<Image>(), "[SLIM_LOAD_ERROR][Invalid SLIM Layer channels]");}
 
 	Image::Format img_format = Image::FORMAT_RGBA8;
 
-	const uint8_t gen_mipmap = (_slim_lh._flags >> 24u) & 0x3u;
+	const uint8_t gen_mipmap = (_slim_lh._flags >> 0x18u) & 0x3u;
 
 	switch (_slim_lh._code)
 	{
-		case 1:
+		case 0x01u:
 		{
 			img_format = Image::FORMAT_L8;
 			break;
 		}
-		case 2:
+		case 0x02u:
 		{
 			img_format = Image::FORMAT_LA8;
 			break;
 		}
-		case 3:
+		case 0x03u:
 		{
 			img_format = Image::FORMAT_RGB8;
 			break;
 		}
-		case 4:
+		case 0x04u:
 		{
 			img_format = Image::FORMAT_RGBA8;
 			break;
@@ -418,7 +421,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	const uint32_t WIDTH 	= (uint32_t)_slim_lh._width;
 	const uint32_t CODE 	= (uint32_t)_slim_lh._code;
 
-	uint8_t  m_data			[2560u]{};	//IT IS LITERALLY A TRASH CAN	
+	uint8_t m_data			[0xA00u]{};
 	uint8_t* m_ch0 			= m_data + 1280u;
 	uint8_t* m_ch1 			= m_data + 1536u;
 	uint8_t* m_ch2 			= m_data + 1792u;
@@ -436,14 +439,14 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	uint8_t* ptr = data.ptrw();
 	uint8_t* out;
 
-	for (uint32_t blcY = 0u; blcY < HEIGHT; blcY += 16u)
+	for (uint32_t blcY = 0x00u; blcY < HEIGHT; blcY += 0x10u)
 	{
-		for (uint32_t blcX = 0u; blcX < WIDTH; blcX += 16u)
+		for (uint32_t blcX = 0x00u; blcX < WIDTH; blcX += 0x10u)
 		{
 
 			f->get_buffer((uint8_t*)&meta_code,  sizeof(uint16_t));
 
-			qnt 						= uint32_t(meta_code & 0x07u) << 1u;	
+			qnt 						= uint32_t(meta_code & 0x07u) << 0x01u;	
 			level_qnt 					= 0.8673689 + 0.3571519 * double(qnt);
 			meta_code 					>>= 0x03u;
 			
@@ -454,22 +457,22 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
     		const uint16_t v3 			= (packed >> 3u)  & 0x07u;
     		const uint16_t v4 			= packed          & 0x07u;
 
-			const bool ch0_org 			= (v0 > 0u);
-			const bool ch1_org 			= (v1 > 0u);
-			const bool ch2_org 			= (v2 > 0u);
-			const bool ch3_org 			= (v3 > 0u);
-			const bool idx_org 			= (v4 > 0u);
+			const bool ch0_org 			= (v0 > 0x00u);
+			const bool ch1_org 			= (v1 > 0x00u);
+			const bool ch2_org 			= (v2 > 0x00u);
+			const bool ch3_org 			= (v3 > 0x00u);
+			const bool idx_org 			= (v4 > 0x00u);
 
 			const uint8_t cm_size 		= ch0_org + ch1_org + ch2_org + ch3_org + idx_org;
 
 			f->get_buffer(m_data,  cm_size);
 
-			uint8_t  cm_pos 			= 0x0u;
-			const uint32_t cmps_ch0 	= ch0_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
-			const uint32_t cmps_ch1 	= ch1_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
-			const uint32_t cmps_ch2 	= ch2_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
-			const uint32_t cmps_ch3 	= ch3_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
-			const uint32_t cmps_idx 	= idx_org ? 0x1u + uint32_t(*(m_data + cm_pos++)) : 0x0u;
+			uint8_t  cm_pos 			= 0x00u;
+			const uint32_t cmps_ch0 	= ch0_org ? 0x01u + uint32_t(*(m_data + cm_pos++)) : 0x00u;
+			const uint32_t cmps_ch1 	= ch1_org ? 0x01u + uint32_t(*(m_data + cm_pos++)) : 0x00u;
+			const uint32_t cmps_ch2 	= ch2_org ? 0x01u + uint32_t(*(m_data + cm_pos++)) : 0x00u;
+			const uint32_t cmps_ch3 	= ch3_org ? 0x01u + uint32_t(*(m_data + cm_pos++)) : 0x00u;
+			const uint32_t cmps_idx 	= idx_org ? 0x01u + uint32_t(*(m_data + cm_pos++)) : 0x00u;
 			
 			const uint32_t st_ch1		= cmps_ch0;
 			const uint32_t st_ch2		= st_ch1 + cmps_ch1;
@@ -485,11 +488,11 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 			DECODE_REVOLVER(v3, m_data + st_ch3, m_ch3, cmps_ch3);
 			DECODE_REVOLVER(v4, m_data + st_idx, m_idx, cmps_idx);
 
-			uint32_t Cout				= 0x0u;
+			uint32_t Cout = 0x00u;
 
-			for (uint32_t y = 0u; y < 16u; ++y)
+			for (uint32_t y = 0x00u; y < 0x10u; ++y)
 			{
-				for (uint32_t x = 0u; x < 16u; ++x)
+				for (uint32_t x = 0x00u; x < 0x10u; ++x)
 				{
 
 					const uint32_t column	= blcX + x;
@@ -505,15 +508,15 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 					uint8_t chn2 				= *(m_ch2+idx);
 					uint8_t chn3 				= *(m_ch3+idx);
 
-					if (qnt > 0u) {
+					if (qnt > 0x00u) {
 						const uint32_t tchn0 	= (uint32_t(chn0) * qnt + level_qnt);
 						const uint32_t tchn1 	= (uint32_t(chn1) * qnt + level_qnt);
 						const uint32_t tchn2 	= (uint32_t(chn2) * qnt + level_qnt);
 						const uint32_t tchn3 	= (uint32_t(chn3) * qnt + level_qnt);
-    					chn0 					= uint8_t(tchn0  > 255u ? 255u : tchn0);
-						chn1 					= uint8_t(tchn1  > 255u ? 255u : tchn1);
-						chn2 					= uint8_t(tchn2  > 255u ? 255u : tchn2);
-						chn3 					= uint8_t(tchn3  > 255u ? 255u : tchn3);
+    					chn0 					= uint8_t(tchn0  > 0xffu ? 0xffu : tchn0);
+						chn1 					= uint8_t(tchn1  > 0xffu ? 0xffu : tchn1);
+						chn2 					= uint8_t(tchn2  > 0xffu ? 0xffu : tchn2);
+						chn3 					= uint8_t(tchn3  > 0xffu ? 0xffu : tchn3);
 					}
 
 					switch (img_format)
@@ -527,22 +530,22 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 						case Image::Image::FORMAT_LA8:
 						{
 							*out		= chn0;
-							*(out+1u)  	= chn3;
+							*(out+0x01u)  	= chn3;
 							break;
 						}
 						case Image::FORMAT_RGB8:
 						{
-							*out		= chn0;
-							*(out+1u) 	= chn1;
-							*(out+2u)  	= chn2;
+							*out			= chn0;
+							*(out+0x01u) 	= chn1;
+							*(out+0x02u)  	= chn2;
 							break;
 						}
 						case Image::FORMAT_RGBA8:
 						{
-							*out		= chn0;
-							*(out+1u)  	= chn1;
-							*(out+2u)  	= chn2;
-							*(out+3u)  	= chn3;
+							*out			= chn0;
+							*(out+0x01u)  	= chn1;
+							*(out+0x02u)  	= chn2;
+							*(out+0x03u)  	= chn3;
 							break;
 						}
 						default:
@@ -557,7 +560,7 @@ static Ref<Image> load_slim_from_file_access(Ref<FileAccess> f, Error *r_error) 
 	
 	Ref<Image> image = Image::create_from_data(_slim_lh._width, _slim_lh._height, false, img_format, data);
 
-	if(gen_mipmap!=1){ image->generate_mipmaps(); }
+	if(gen_mipmap!=0x01u){ image->generate_mipmaps(); }
 
 	if (r_error){*r_error = OK;}
 	return image;

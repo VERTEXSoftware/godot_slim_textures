@@ -51,19 +51,68 @@ extern "C" {
 
 uint32_t MASKARED_VERSION(){ return MASKARED_VER; }
 
+#ifdef SLEP_MASKARED_EXP
 
-MASKARED_RESULT MASKARED_SIZE_CALC(uint8_t* buf, uint32_t size, uint32_t* sizec, uint8_t mask) {
+static constexpr uint8_t MASKARED_PCTABLE[0x100u] = {
+    0x00, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x03, 0x01, 0x02, 0x02, 0x03, 0x02, 0x03, 0x03, 0x04, 
+    0x01, 0x02, 0x02, 0x03, 0x02, 0x03, 0x03, 0x04, 0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 
+    0x01, 0x02, 0x02, 0x03, 0x02, 0x03, 0x03, 0x04, 0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 
+    0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 
+    0x01, 0x02, 0x02, 0x03, 0x02, 0x03, 0x03, 0x04, 0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 
+    0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 
+    0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 
+    0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 0x04, 0x05, 0x05, 0x06, 0x05, 0x06, 0x06, 0x07, 
+    0x01, 0x02, 0x02, 0x03, 0x02, 0x03, 0x03, 0x04, 0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 
+    0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 
+    0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 
+    0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 0x04, 0x05, 0x05, 0x06, 0x05, 0x06, 0x06, 0x07, 
+    0x02, 0x03, 0x03, 0x04, 0x03, 0x04, 0x04, 0x05, 0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 
+    0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 0x04, 0x05, 0x05, 0x06, 0x05, 0x06, 0x06, 0x07, 
+    0x03, 0x04, 0x04, 0x05, 0x04, 0x05, 0x05, 0x06, 0x04, 0x05, 0x05, 0x06, 0x05, 0x06, 0x06, 0x07, 
+    0x04, 0x05, 0x05, 0x06, 0x05, 0x06, 0x06, 0x07, 0x05, 0x06, 0x06, 0x07, 0x06, 0x07, 0x07, 0x08,
+};
 
-	if (buf == NULL || size == 0) { return MASKARED_RESULT::SL_ERROR_INVALID_PARAM; }
 
-	const uint8_t first = *buf;
-	const uint8_t* end	= buf + size;
-	uint8_t accum		= 0x00u;
-	uint32_t step		= 0x00u;
+MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint32_t* sizec) {
 
-	for (uint8_t* p = buf; p < end && mask != 0xFFu; ++p) {
-		mask |= (first ^ *p);
+    if (buf == NULL || bufc == NULL  || size == 0x00u) { return MASKARED_RESULT::SL_ERROR_INVALID_PARAM; }
+
+	const uint8_t* 	end			= buf + size;
+	uint8_t* 		pstr		= bufc + 0x02u;
+	uint8_t 		move 		= 0x00u;
+	uint8_t 		accum		= 0x00u;
+	uint8_t 		mask 		= 0xFFu;
+	uint32_t 		step		= 0x00u;
+	uint16_t 		pos			= 0x00u;
+	uint8_t			hist		[0x100u]{};
+
+   for (uint8_t *p = buf; p < end; ++p) {
+        *(hist + *p) = 0x01u;
+    }
+	
+	for (uint16_t i = 0x00u; i < 0x100u; ++i) {
+		if (*(hist + i) == 1) {
+			*(hist + pos++) = uint8_t(i);
+		}
 	}
+
+	for (uint8_t m = 0x00u; m < 0x80u; ++m)
+    {
+		uint8_t mask_tmp = 0x00u;
+
+		for (uint16_t i = 0x00u; i < pos; ++i)
+    	{
+			mask_tmp |= (*buf + m) ^ (*(hist + i) + m);
+		}
+
+		if(*(MASKARED_PCTABLE+mask_tmp) < *(MASKARED_PCTABLE+mask)){
+			mask = mask_tmp;
+			move = m;
+			if(mask == 0x00u){break;}
+		}	
+	}
+
+	uint8_t first = *buf + move;
 
 	for (uint8_t bit = 0x80u; bit > 0x00u; bit >>= 0x01u) {
 		if (!(mask & bit)) {
@@ -74,17 +123,79 @@ MASKARED_RESULT MASKARED_SIZE_CALC(uint8_t* buf, uint32_t size, uint32_t* sizec,
 		}
 	}
 
-	uint32_t total = size * (0x08u - step);
-	*sizec = (step + total + 0x0Fu) >> 0x03u;
+	uint32_t total 	= size * (0x08u - step);
 
-	return MASKARED_RESULT::SL_OK;
+	*sizec 			= (step + total + 0x17u) >> 0x03u;
+	*bufc 			= move;
+	*(bufc + 0x01u) = mask;
+	*pstr 			= accum;
+
+	for (uint8_t *c, *p = buf; p < end; ++p) {
+		const uint8_t ps = uint8_t(*p+move);
+		for (uint8_t bit = 0x80u; bit > 0x00u; bit >>= 0x01u) {
+			if (mask & bit) {
+				if (ps & bit) {
+					c = pstr + (step >> 0x03u);
+					*c |= (0x80u >> (step & 0x07u));
+				}
+				++step;
+			}
+		}
+	}
+
+	//Tails remover
+    uint32_t pos_tail = *sizec;
+    while (pos_tail > 0x01u && *(bufc + pos_tail - 0x01u) == 0x00u) {
+        --pos_tail;
+    }
+    *sizec = pos_tail;
+
+    return MASKARED_RESULT::SL_OK;
 }
 
+
+MASKARED_RESULT MASKARED_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint32_t sized) {
+
+    if (buf == NULL || bufd == NULL  || size == 0x00u || sized == 0x00u) { return MASKARED_RESULT::SL_ERROR_INVALID_PARAM; }
+
+	uint8_t* 		pstr	= buf + 0x02u;
+	const uint8_t 	mask	= *(buf + 0x01u);
+	const uint8_t 	move	= *buf;
+	const uint8_t 	accum 	= *pstr;
+	const uint8_t* 	endd 	= bufd + sized;
+	const uint8_t* 	endp 	= buf + size;
+	uint8_t  		chr		= 0x00u;
+	uint32_t 		step	= 0x00u;
+
+	for (uint8_t bit = 0x80u; bit > 0x00u; bit >>= 0x01u) {
+		if (!(mask & bit)) {
+			if ((accum << step) & 0x80u) {
+				chr |= bit;
+			}
+			++step;
+		}
+	}
+
+	for (uint8_t* d = bufd, *p = pstr; d < endd; ++d) {
+		*d = chr;
+		for (uint8_t bit = 0x80u; bit > 0x00u && p < endp; bit >>= 0x01u) {
+			if (mask & bit) {
+				if (*p & (0x80u >> (step & 0x07u))) { *d |= bit; }
+				p = pstr + (++step >> 0x03u);
+			}
+		}
+		*d-=move;
+	}
+
+    return MASKARED_RESULT::SL_OK;
+}
+
+#else
 
 
 MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint32_t* sizec) {
 
-    if (buf == NULL || bufc == NULL  || size == 0) { return MASKARED_RESULT::SL_ERROR_INVALID_PARAM; }
+    if (buf == NULL || bufc == NULL  || size == 0x00u) { return MASKARED_RESULT::SL_ERROR_INVALID_PARAM; }
 
 	uint8_t* pstr		= bufc + 0x01u;
 	const uint8_t first = *buf;
@@ -93,7 +204,7 @@ MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint
 	uint8_t accum		= 0x00u;
 	uint32_t step		= 0x00u;
 
-	for (uint8_t* p = buf; p < end && mask != 0xFFu; ++p) {
+	for (uint8_t* p = buf + 0x01u; p < end && mask != 0xFFu; ++p) {
 		mask |= (first ^ *p);
 	}
 
@@ -126,7 +237,7 @@ MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint
 
 	//Tails remover
     uint32_t pos_tail = *sizec;
-    while (pos_tail > 1 && bufc[pos_tail - 1] == 0) {
+    while (pos_tail > 0x01u && *(bufc + pos_tail - 0x01u) == 0x00u) {
         --pos_tail;
     }
     *sizec = pos_tail;
@@ -137,7 +248,7 @@ MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint
 
 MASKARED_RESULT MASKARED_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint32_t sized) {
 
-    if (buf == NULL || bufd == NULL  || size == 0 || sized == 0 ) { return MASKARED_RESULT::SL_ERROR_INVALID_PARAM; }
+    if (buf == NULL || bufd == NULL  || size == 0x00u || sized == 0x00u) { return MASKARED_RESULT::SL_ERROR_INVALID_PARAM; }
 
 	uint8_t* pstr		= buf + 0x01u;
 	const uint8_t mask	= *buf;
@@ -169,6 +280,6 @@ MASKARED_RESULT MASKARED_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint
     return MASKARED_RESULT::SL_OK;
 }
 
-
+#endif // SLEP_MASKARED_EXP
 #endif // SLEP_MASKARED_IMP 
 #endif // SLEP_MASKARED_H

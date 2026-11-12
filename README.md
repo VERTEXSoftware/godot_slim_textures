@@ -7,7 +7,7 @@
 ![cmp](logos/compare.png)
 
 # SLIM
-**SLIM (SLeptsov IMage)** – This is an image encoding and compression format developed as a replacement for the DDS format. This format is designed for storing raster graphics and supports resolutions up to 65535x65535 pixels. It uses lossless compression algorithms (**RLE**, **RICE**, **SLDD**, **MASKARED**) and also employs a smart quantization algorithm.
+**SLIM (SLeptsov IMage format)** – This is an image encoding and compression format developed as a replacement for the DDS format. This format is designed for storing raster graphics and supports resolutions up to 65535x65535 pixels. It uses lossless compression algorithms (**RLE**, **RICE**, **SLDD**, **MASKARED**) and also employs a smart quantization algorithm.
 
 
 # Comparing SLIM format with the standard texture format in GODOT

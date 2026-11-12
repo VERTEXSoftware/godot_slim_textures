@@ -34,7 +34,7 @@ The module is native and is compiled directly into the engine, so you must build
   | macOS | Xcode Command Line Tools: `xcode-select --install` |
 - **The Godot source code** — the version the module is compatible with;
 - **The GODOT SLIM Textures module source code**.
-- **The toSLIM utility source code** — to create or convert textures to the SLIM format ([github.com/VERTEXSoftware/toSLIM](https://github.com/VERTEXSoftware/toSLIM)) — see section 5.
+- **The toSLIM utility source code** — to create or convert textures to the SLIM format ([github.com/VERTEXSoftware/toSLIM](https://github.com/VERTEXSoftware/toSLIM)) — see [section 5](#5-build-the-toslim-utility-create-slim-textures).
 
 ---
 
@@ -128,9 +128,9 @@ bin/godot.macos.template_release.arm64          # macOS
 bin/godot.macos.template_debug.arm64            # macOS
 ```
 
-The editor binary is ready to use as is — the module is already built into it. The templates need one more step: installing them (see 4.1).
+The editor binary is ready to use as is — the module is already built into it. The templates need one more step: installing them (see [section 4.1](#41-install-the-export-templates)).
 
-### Install the export templates
+### 4.1. Install the export templates
 
 Copy the template files from `bin/` into the templates folder for your version of Godot:
 
@@ -152,7 +152,7 @@ Rename the copied files to the names the export system expects:
 
 For Godot 3.x builds the names differ (`windows_release_64.exe` / `windows_debug_64.exe`, `x11_release_64` / `x11_debug_64`); for other platforms and details, see the official Godot documentation ("Exporting projects" section).
 
-> **Shortcut:** instead of installing templates globally, you can keep them in `bin/` and point each export preset's **Custom Template** directly at these files (see section 6).
+> **Shortcut:** instead of installing templates globally, you can keep them in `bin/` and point each export preset's **Custom Template** directly at these files (see [section 7](#7-export-a-project-with-the-export-templates)).
 
 ---
 
@@ -216,14 +216,14 @@ toslim -i texture.SLIM                      # show information about a .SLIM fil
 With the editor and the templates built as above, exporting a game requires no extra tools:
 
 1. Launch the built editor from `bin/` and open your project.
-2. Check the templates: **Editor → Manage Export Templates** — there should be no warning about missing templates for the current version. If there is, install the templates as described in section 4.1.
+2. Check the templates: **Editor → Manage Export Templates** — there should be no warning about missing templates for the current version. If there is, install the templates as described in [section 4.1](#41-install-the-export-templates).
 3. Open **Project → Export** and click **Add…** to create a preset for the target platform (Windows Desktop, Linux, macOS, etc.).
 4. Configure the preset: name, architecture, and the platform options you need.
-5. If you skipped section 4.1, expand **Custom Template** in the preset and point **Release** / **Debug** directly at the template files built in section 4.
+5. If you skipped section 4.1, expand **Custom Template** in the preset and point **Release** / **Debug** directly at the template files built in [section 4](#4-build-the-engine-and-the-export-templates).
 6. Click **Export Project…** and choose the output file. Leave **Export With Debug** unchecked for a release build (checked exports use the debug template).
 7. Run the exported game and load a project with a `.SLIM` texture — if the texture displays, the module is present in the finished game as well.
 
-> **Note:** **Export PCK/ZIP** packs only the game data; the engine executable always comes from the export templates — which is exactly why the module must be built into them (section 4).
+> **Note:** **Export PCK/ZIP** packs only the game data; the engine executable always comes from the export templates — which is exactly why the module must be built into them ([section 4](#4-build-the-engine-and-the-export-templates)).
 
 ---
 
@@ -236,8 +236,8 @@ With the editor and the templates built as above, exporting a game requires no e
 | Module compilation errors | Make sure the Godot tag matches the version the module was written for |
 | Module is "not picked up" | Verify that the module folder contains `SCsub` and `config.py` |
 | Building for Godot 3.x | Use `platform=x11` instead of `platform=linuxbsd`, and `target=release_debug` instead of `target=editor` |
-| Exported game doesn't load `.SLIM` textures | The game was exported with templates without the module (official templates were used). Rebuild and install the templates (sections 4 and 4.1) or point the preset's **Custom Template** to the files from `bin/`, then export again |
-| `toSLIM` build fails / SDL2 errors | Install the dependencies from section 5, or build the terminal-only version (`make terminal`) if you only need conversion; on some systems SDL2 must be compiled manually — see the toSLIM repository |
+| Exported game doesn't load `.SLIM` textures | The game was exported with templates without the module (official templates were used). Rebuild and install the templates ([section 4](#4-build-the-engine-and-the-export-templates) and [section 4.1](#41-install-the-export-templates)) or point the preset's **Custom Template** to the files from `bin/`, then export again |
+| `toSLIM` build fails / SDL2 errors | Install the dependencies from [section 5](#5-build-the-toslim-utility-create-slim-textures), or build the terminal-only version (`make terminal`) if you only need conversion; on some systems SDL2 must be compiled manually — see the toSLIM repository |
 
 ---
 

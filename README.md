@@ -9,6 +9,45 @@
 # SLIM
 **SLIM (SLeptsov IMage)** – This is an image encoding and compression format developed as a replacement for the DDS format. This format is designed for storing raster graphics and supports resolutions up to 65535x65535 pixels. It uses lossless compression algorithms (**RLE**, **RICE**, **SLDD**, **MASKARED**) and also employs a smart quantization algorithm.
 
+
+# Comparing SLIM format with the standard texture format in GODOT
+For the test, ToSLIM is used with the following args.
+
+```bash
+#Quality level range [1..255]
+
+#lossless compression (100% quality)
+./toslim -y -c -q 255 "$input" "$output"
+
+#losses compression (39.22% quality)
+./toslim -y -c -q 100 "$input" "$output"
+```
+
+The test compares the same set of textures imported into Godot in three ways:
+
+- **Default (S3TC BPTC)** — Godot's standard import with lossy VRAM texture compression;
+- **Use SLIM (lossless)** — textures converted with `-q 255` (100% quality);
+- **Use SLIM (losses)** — the same textures converted with `-q 100` (39.22% quality).
+
+> **Note:** That a quality setting of 100 does not literally mean 39.22% or 40% quality; the smart quantization algorithm analyzes the image and applies lossy compression based on the noise level in specific areas, as human vision is less sensitive to changes in noisy regions than in areas with sparse detail.
+
+### Resource pack size
+
+![godot_pack_cmp](logos/godot_pack_cmp.png)
+
+Switching textures to the SLIM format shrinks the texture part of the pack from **368 MB** to **321 MB** in the lossless mode (-13%) and to **170 MB** in the lossy mode (-54%); the total pack size drops from **569 MB** to **522 MB** (-8%) and **371 MB** (-35%) respectively. 
+> **Note:** Even SLIM textures, which suffer no loss in quality, take up less space in the pack than standard S3TC/BPTC textures, which use lossy compression.
+
+![godot_quality_cmp](logos/godot_quality_cmp.png)
+
+##### Quality is measured against the original uncompressed images (higher is better):
+
+- **SLIM lossless** is pixel-perfect: PSNR / PSQNR = ∞, SSIM = **100.0000%**;
+- **SLIM lossy** (`-q 100`) still beats the default S3TC/BPTC on every metric: PSNR **45.60 dB** vs **43.42 dB** (+2.18 dB), PSQNR **46.69 dB** vs **42.53 dB** (+4.15 dB), SSIM **99.9688%** vs **99.9589%**.
+
+> **In short:** the lossless SLIM mode makes the pack smaller while keeping the image identical to the original, and the lossy mode cuts the texture size by more than half while still losing less quality than Godot's default VRAM compression.
+
+
 # Building Godot with the GODOT SLIM Textures Module
 
 A quick guide on how to add the **GODOT SLIM Textures** module (loading textures in the **SLIM** format) to the Godot source code and build the engine with its support.

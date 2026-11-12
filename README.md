@@ -34,6 +34,7 @@ The module is native and is compiled directly into the engine, so you must build
   | macOS | Xcode Command Line Tools: `xcode-select --install` |
 - **The Godot source code** — the version the module is compatible with;
 - **The GODOT SLIM Textures module source code**.
+- **The toSLIM utility source code** — to create or convert textures to the SLIM format ([github.com/VERTEXSoftware/toSLIM](https://github.com/VERTEXSoftware/toSLIM)) — see section 5.
 
 ---
 
@@ -129,7 +130,7 @@ bin/godot.macos.template_debug.arm64            # macOS
 
 The editor binary is ready to use as is — the module is already built into it. The templates need one more step: installing them (see 4.1).
 
-### 4.1. Install the export templates
+### Install the export templates
 
 Copy the template files from `bin/` into the templates folder for your version of Godot:
 
@@ -155,7 +156,54 @@ For Godot 3.x builds the names differ (`windows_release_64.exe` / `windows_debug
 
 ---
 
-## 5. Verify that the module works
+## 5. Build the toSLIM utility (create .SLIM textures)
+
+The module only **loads** `.SLIM` textures — it does not import other image formats. To create new `.SLIM` files, or to convert existing textures (**PNG**, **JPG/JPEG**, **GIF**, **BMP**, **PIC**) to the SLIM format, build the **toSLIM** converter from its own repository:
+
+```bash
+git clone https://github.com/VERTEXSoftware/toSLIM.git
+cd toSLIM
+```
+
+**Installing dependencies (Linux):**
+
+```bash
+# Debian/Ubuntu
+apt update
+apt install build-essential make cmake
+apt install libx11-dev libxext-dev libxrandr-dev libxi-dev libxcursor-dev libxinerama-dev libxss-dev libgl1-mesa-dev
+
+# Arch Linux
+pacman -Syu
+pacman -S base-devel make cmake
+pacman -S mesa libx11 libxext libxrandr libxi libxcursor libxinerama libxss
+```
+
+**Default build (graphical mode):**
+
+```bash
+make
+```
+
+**Terminal mode only build (no GUI — enough for converting textures):**
+
+```bash
+make terminal
+```
+
+> **Note:** the graphical viewer uses SDL2, and on some systems you may need to compile SDL2 manually — see the toSLIM repository for details. The tool's README documents the Linux build; for other platforms, follow the SDL2 build instructions there.
+
+**Converting a texture to the SLIM format:**
+
+```bash
+toslim -c texture.png texture.SLIM          # convert PNG → SLIM
+toslim -c -q 255 texture.png texture.SLIM   # quality 0–255; 255 = lossless / maximum quality
+toslim -i texture.SLIM                      # show information about a .SLIM file
+```
+
+---
+
+## 6. Verify that the module works
 
 1. Launch the built editor from `bin/`.
 2. Import a `.SLIM` texture file into a test project.
@@ -163,7 +211,7 @@ For Godot 3.x builds the names differ (`windows_release_64.exe` / `windows_debug
 
 ---
 
-## 6. Export a project with the export templates
+## 7. Export a project with the export templates
 
 With the editor and the templates built as above, exporting a game requires no extra tools:
 
@@ -179,7 +227,7 @@ With the editor and the templates built as above, exporting a game requires no e
 
 ---
 
-## 7. Common issues
+## 8. Common issues
 
 | Problem | Solution |
 |---|---|
@@ -189,9 +237,12 @@ With the editor and the templates built as above, exporting a game requires no e
 | Module is "not picked up" | Verify that the module folder contains `SCsub` and `config.py` |
 | Building for Godot 3.x | Use `platform=x11` instead of `platform=linuxbsd`, and `target=release_debug` instead of `target=editor` |
 | Exported game doesn't load `.SLIM` textures | The game was exported with templates without the module (official templates were used). Rebuild and install the templates (sections 4 and 4.1) or point the preset's **Custom Template** to the files from `bin/`, then export again |
+| `toSLIM` build fails / SDL2 errors | Install the dependencies from section 5, or build the terminal-only version (`make terminal`) if you only need conversion; on some systems SDL2 must be compiled manually — see the toSLIM repository |
 
+---
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
 Copyright (c) 2026 Sleptsov Vladimir

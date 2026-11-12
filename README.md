@@ -26,16 +26,16 @@ For the test, ToSLIM is used with the following args.
 The test compares the same set of textures imported into Godot in three ways:
 
 - **Default (S3TC BPTC)** — Godot's standard import with lossy VRAM texture compression;
-- **Use SLIM (lossless)** — textures converted with `-q 255` (100% quality);
-- **Use SLIM (losses)** — the same textures converted with `-q 100` (39.22% quality).
+- **SLIM (lossless)** — textures converted with `-q 255` (100% quality);
+- **SLIM (losses)** — the same textures converted with `-q 100` (39.22% quality).
 
-> **Note:** That a quality setting of 100 does not literally mean 39.22% or 40% quality; the smart quantization algorithm analyzes the image and applies lossy compression based on the noise level in specific areas, as human vision is less sensitive to changes in noisy regions than in areas with sparse detail.
+> **Note:** That a quality setting of 100 does not literally mean 39.22% or 40% quality. The smart quantization algorithm analyzes the image and applies lossy compression based on the noise level in specific areas, as human vision is less sensitive to changes in noisy regions than in areas with sparse detail.
 
 ### Resource pack size
 
 ![godot_pack_cmp](logos/godot_pack_cmp.png)
 
-Switching textures to the SLIM format shrinks the texture part of the pack from **368 MB** to **321 MB** in the lossless mode (-13%) and to **170 MB** in the lossy mode (-54%); the total pack size drops from **569 MB** to **522 MB** (-8%) and **371 MB** (-35%) respectively. 
+Switching textures to the SLIM format shrinks the texture part of the pack from **368 MB** to **321 MB** in the lossless mode (-13%) and to **170 MB** in the lossy mode (-54%). The total pack size drops from **569 MB** to **522 MB** (-8%) and **371 MB** (-35%) respectively. 
 
 > **Note:** Even SLIM textures, which suffer no loss in quality, take up less space in the pack than standard S3TC/BPTC textures, which use lossy compression.
 

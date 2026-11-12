@@ -29,14 +29,15 @@ The test compares the same set of textures imported into Godot in three ways:
 - **Use SLIM (lossless)** — textures converted with `-q 255` (100% quality);
 - **Use SLIM (losses)** — the same textures converted with `-q 100` (39.22% quality).
 
-> **Note:** That a quality setting of 100 does not literally mean 39.22% or 40% quality; the smart quantization algorithm analyzes the image and applies lossy compression based on the noise level in specific areas, as human vision is less sensitive to changes in noisy regions than in areas with sparse detail.
+> [!NOTE] That a quality setting of 100 does not literally mean 39.22% or 40% quality; the smart quantization algorithm analyzes the image and applies lossy compression based on the noise level in specific areas, as human vision is less sensitive to changes in noisy regions than in areas with sparse detail.
 
 ### Resource pack size
 
 ![godot_pack_cmp](logos/godot_pack_cmp.png)
 
 Switching textures to the SLIM format shrinks the texture part of the pack from **368 MB** to **321 MB** in the lossless mode (-13%) and to **170 MB** in the lossy mode (-54%); the total pack size drops from **569 MB** to **522 MB** (-8%) and **371 MB** (-35%) respectively. 
-> **Note:** Even SLIM textures, which suffer no loss in quality, take up less space in the pack than standard S3TC/BPTC textures, which use lossy compression.
+
+> [!IMPORTANT] Even SLIM textures, which suffer no loss in quality, take up less space in the pack than standard S3TC/BPTC textures, which use lossy compression.
 
 ![godot_quality_cmp](logos/godot_quality_cmp.png)
 
@@ -45,7 +46,7 @@ Switching textures to the SLIM format shrinks the texture part of the pack from 
 - **SLIM lossless** is pixel-perfect: PSNR / PSQNR = ∞, SSIM = **100.0000%**;
 - **SLIM lossy** (`-q 100`) still beats the default S3TC/BPTC on every metric: PSNR **45.60 dB** vs **43.42 dB** (+2.18 dB), PSQNR **46.69 dB** vs **42.53 dB** (+4.15 dB), SSIM **99.9688%** vs **99.9589%**.
 
-> **In short:** the lossless SLIM mode makes the pack smaller while keeping the image identical to the original, and the lossy mode cuts the texture size by more than half while still losing less quality than Godot's default VRAM compression.
+> [!NOTE] The lossless SLIM mode makes the pack smaller while keeping the image identical to the original, and the lossy mode cuts the texture size by more than half while still losing less quality than Godot's default VRAM compression.
 
 
 # Building Godot with the GODOT SLIM Textures Module

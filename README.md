@@ -277,12 +277,12 @@ With the editor and the templates built as above, exporting a game requires no e
 |---|---|
 | `scons: command not found` | Run `pip install scons` and make sure the Python/Scripts folder is in `PATH` (Windows) |
 | SCons can't find Visual Studio | Run the build from the **"x64 Native Tools Command Prompt for VS 2022"** console |
+| `The Python 'zstandard' module is needed` | **When building Godot from source**, you may need to install the `zstandard` module: run `pip install --user zstandard`. Required for Python 3.9–3.13 (built-in Zstandard support only appears in Python 3.14); on some distros (e.g. Alpine Linux) you may also need to install it via the system package manager (`apk add py3-zstandard`) |
 | Module compilation errors | Make sure the Godot tag matches the version the module was written for |
 | Module is "not picked up" | Verify that the module folder contains `SCsub` and `config.py` |
 | Building for Godot 3.x | Use `platform=x11` instead of `platform=linuxbsd`, and `target=release_debug` instead of `target=editor` |
 | Exported game doesn't load `.SLIM` textures | The game was exported with templates without the module (official templates were used). Rebuild and install the templates ([section 4](#4-build-the-engine-and-the-export-templates) and [section 4.1](#41-install-the-export-templates)) or point the preset's **Custom Template** to the files from `bin/`, then export again |
 | `toSLIM` build fails / SDL2 errors | Install the dependencies from [section 5](#5-build-the-toslim-utility-create-slim-textures), or build the terminal-only version (`make terminal`) if you only need conversion; on some systems SDL2 must be compiled manually — see the toSLIM repository |
-
 ---
 
 ## License

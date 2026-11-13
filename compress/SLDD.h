@@ -188,26 +188,30 @@ SLDD_RESULT SLDD_DECODE(uint8_t* buffer, uint32_t size, uint8_t* bufferde, uint3
 	const uint8_t* endd 	= bufferde + sizede;
 	const uint8_t* endp 	= buffer + size;
 
-	uint32_t leftCount		= (DataByte >> 5)	& 0x7u;
-	uint32_t rightCount		= (DataByte >> 2)	& 0x7u;
-	const bool leftc		= (DataByte >> 1)	& 0x1u;
-	const bool rightc		= DataByte			& 0x1u;
+	uint32_t leftCount		= (DataByte >> 0x05u)	& 0x07u;
+	uint32_t rightCount		= (DataByte >> 0x02u)	& 0x07u;
+	const bool leftc		= (DataByte >> 0x01u)	& 0x01u;
+	const bool rightc		= DataByte				& 0x01u;
 
-	uint8_t mstart 			= (0x80u >> leftCount);
-	uint8_t mend 			= (0x80u >> (8 - rightCount));
+	uint8_t  mstart 		= (0x80u >> leftCount);
+	uint8_t  mend 			= (0x80u >> (0x08u - rightCount));
+	uint8_t  chrt			= 0x00u;
 	uint8_t  chr			= 0x00u;
+	uint32_t step 			= 0x00u;
 
-	if (leftCount > 0 && leftc)  {chr |= ((uint8_t)((1u << leftCount) - 1u)) << (8 - leftCount);}
-    if (rightCount > 0 && rightc) {chr |= ((uint8_t)((1u << rightCount) - 1u));}
+	if (leftCount > 0x00u && leftc)  {chr |= ((uint8_t)((1u << leftCount) - 0x01u)) << (0x08u - leftCount);}
+    if (rightCount > 0x00u && rightc) {chr |= ((uint8_t)((1u << rightCount) - 0x01u));}
 
-	uint32_t step = 0;
-//&& p < endp error!
-	for (uint8_t* d = bufferde, *p = pstr; d < endd; ++d) {
-		*d = chr;
-		for (uint8_t bit = mstart; bit > mend && p < endp; bit >>= 0x01u) {
-				if (*p & (0x80u >> (step & 0x07u))) { *d |= bit; }
-				p = pstr + (++step >> 0x03u);
+	for (uint8_t* d = bufferde; d < endd; ++d) {
+		chrt = chr;
+		if(pstr < endp){
+			for (uint8_t bit = mstart; bit > mend; bit >>= 0x01u) {
+				if (pstr >= endp){break;}
+				if (*pstr & (0x80u >> (step & 0x07u))) { chrt |= bit; }
+				pstr += !(++step & 0x07u); 
+			}
 		}
+		*d = chrt;
 	}
 
     return SLDD_RESULT::SLDD_OK;

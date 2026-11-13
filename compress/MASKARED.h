@@ -164,6 +164,7 @@ MASKARED_RESULT MASKARED_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint
 	const uint8_t 	accum 	= *pstr;
 	const uint8_t* 	endd 	= bufd + sized;
 	const uint8_t* 	endp 	= buf + size;
+	uint8_t  		chrt	= 0x00u;
 	uint8_t  		chr		= 0x00u;
 	uint32_t 		step	= 0x00u;
 
@@ -176,15 +177,18 @@ MASKARED_RESULT MASKARED_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint
 		}
 	}
 
-	for (uint8_t* d = bufd, *p = pstr; d < endd; ++d) {
-		*d = chr;
-		for (uint8_t bit = 0x80u; bit > 0x00u && p < endp; bit >>= 0x01u) {
-			if (mask & bit) {
-				if (*p & (0x80u >> (step & 0x07u))) { *d |= bit; }
-				p = pstr + (++step >> 0x03u);
+	for (uint8_t* d = bufd; d < endd; ++d) {
+		chrt = chr;
+		if(pstr < endp){
+			for (uint8_t bit = 0x80u; bit > 0x00u; bit >>= 0x01u) {
+				if (mask & bit) {
+					if (pstr >= endp){break;}
+					if (*pstr & (0x80u >> (step & 0x07u))) { chrt |= bit; }
+					pstr += !(++step & 0x07u); 
+				}
 			}
 		}
-		*d-=move;
+		*d = chrt-move;
 	}
 
     return MASKARED_RESULT::SL_OK;

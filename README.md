@@ -11,6 +11,10 @@
 
 
 # Comparing SLIM format with the standard texture format in GODOT
+
+
+The **Third Person Shooter (TPS) Demo** project is used as material for comparing compression. It can be downloaded via this link: [https://github.com/godotengine/tps-demo](https://github.com/godotengine/tps-demo)
+
 For the test, ToSLIM is used with the following args.
 
 ```bash
@@ -19,7 +23,7 @@ For the test, ToSLIM is used with the following args.
 #lossless compression (100% quality)
 ./toslim -y -c -q 255 "$input" "$output"
 
-#losses compression (39.22% quality)
+#lossy compression (39.22% quality)
 ./toslim -y -c -q 100 "$input" "$output"
 ```
 
@@ -27,7 +31,7 @@ The test compares the same set of textures imported into Godot in three ways:
 
 - **Default (S3TC BPTC)** — Godot's standard import with lossy VRAM texture compression;
 - **SLIM (lossless)** — textures converted with `-q 255` (100% quality);
-- **SLIM (losses)** — the same textures converted with `-q 100` (39.22% quality).
+- **SLIM (lossy)** — the same textures converted with `-q 100` (39.22% quality).
 
 > **Note:** That a quality setting of 100 does not literally mean 39.22% or 40% quality. The smart quantization algorithm analyzes the image and applies lossy compression based on the noise level in specific areas, as human vision is less sensitive to changes in noisy regions than in areas with sparse detail.
 

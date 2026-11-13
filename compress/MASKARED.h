@@ -181,8 +181,8 @@ MASKARED_RESULT MASKARED_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint
 		chrt = chr;
 		if(pstr < endp){
 			for (uint8_t bit = 0x80u; bit > 0x00u; bit >>= 0x01u) {
+				if (pstr >= endp){break;}
 				if (mask & bit) {
-					if (pstr >= endp){break;}
 					if (*pstr & (0x80u >> (step & 0x07u))) { chrt |= bit; }
 					pstr += !(++step & 0x07u); 
 				}

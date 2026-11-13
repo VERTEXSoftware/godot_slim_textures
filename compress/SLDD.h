@@ -121,22 +121,23 @@ SLDD_RESULT SLDD_ENCODE(uint8_t* buffer, uint32_t size, uint8_t* buffercomp, uin
 
 	uint32_t 		leftCount	= 0x07u;
 	uint32_t 		rightCount	= 0x07u;
-	uint16_t 		pos			= 0x00u;
+	uint8_t  		chrt		= 0x00u;
 	uint8_t			hist		[0x100u]{};
+	uint8_t			*histend	= hist;
 
    for (uint8_t *p = buffer; p < end; ++p) {
         *(hist + *p) = 0x01u;
     }
 	
 	for (uint16_t i = 0x00u; i < 0x100u; ++i) {
-		if (*(hist+i) == 1) {
-			*(hist + pos++) = uint8_t(i);
+		if (*(hist + i) == 1) {
+			*histend++ = uint8_t(i);
 		}
 	}
 
-	for (uint16_t i = 0x00u; i < pos; ++i)
+	for (uint8_t* p = hist; p < histend; ++p)
     {
-        const uint8_t 	cur 	= *(hist + i);
+        const uint8_t 	cur 	= *p;
         const uint32_t 	left_c  = *(LZ8 + (cur ^ lfill));
         const uint32_t 	right_c = *(TZ8 + (cur ^ rfill));
 
@@ -156,13 +157,14 @@ SLDD_RESULT SLDD_ENCODE(uint8_t* buffer, uint32_t size, uint8_t* buffercomp, uin
 	uint8_t mend 	= (0x80u >> (0x08u - rightCount));
 	uint32_t step 	= 0;
 
-	for (uint8_t *c, *p = buffer; p < end; ++p) {
+
+	for (uint8_t *p = buffer; p < end; ++p) {
+		chrt = *p;
 		for (uint8_t bit = mstart; bit > mend; bit >>= 0x01u) {
-			if (*p & bit) {
-				c = pstr + (step >> 0x03u);
-				*c |= (0x80u >> (step & 0x07u));
+			if (chrt & bit) {
+				*pstr |= (0x80u >> (step & 0x07u));
 			}
-			++step;
+			pstr += !(++step & 0x07u);		
 		}
 	}
 

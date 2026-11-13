@@ -79,20 +79,22 @@ MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint
 
 	const uint8_t* 	end			= buf + size;
 	uint8_t* 		pstr		= bufc + 0x02u;
+	uint8_t 		first 		= *buf;
 	uint8_t 		move 		= 0x00u;
 	uint8_t 		accum		= 0x00u;
 	uint8_t 		mask 		= 0xFFu;
 	uint32_t 		step		= 0x00u;
-	uint16_t 		pos			= 0x00u;
+	uint8_t  		chrt		= 0x00u;
 	uint8_t			hist		[0x100u]{};
+	uint8_t			*histend	= hist;
 
-   for (uint8_t *p = buf; p < end; ++p) {
+   	for (uint8_t *p = buf; p < end; ++p) {
         *(hist + *p) = 0x01u;
     }
 	
 	for (uint16_t i = 0x00u; i < 0x100u; ++i) {
 		if (*(hist + i) == 1) {
-			*(hist + pos++) = uint8_t(i);
+			*histend++ = uint8_t(i);
 		}
 	}
 
@@ -100,9 +102,9 @@ MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint
     {
 		uint8_t mask_tmp = 0x00u;
 
-		for (uint16_t i = 0x00u; i < pos; ++i)
-    	{
-			mask_tmp |= (*buf + m) ^ (*(hist + i) + m);
+		for (uint8_t* p = hist; p < histend; ++p)
+		{
+			mask_tmp |= (first + m) ^ (*p + m);
 		}
 
 		if(*(MASKARED_PCTABLE+mask_tmp) < *(MASKARED_PCTABLE+mask)){
@@ -112,7 +114,7 @@ MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint
 		}	
 	}
 
-	uint8_t first = *buf + move;
+	first = *buf + move;
 
 	for (uint8_t bit = 0x80u; bit > 0x00u; bit >>= 0x01u) {
 		if (!(mask & bit)) {
@@ -130,15 +132,14 @@ MASKARED_RESULT MASKARED_ENCODE(uint8_t* buf, uint32_t size, uint8_t* bufc, uint
 	*(bufc + 0x01u) = mask;
 	*pstr 			= accum;
 
-	for (uint8_t *c, *p = buf; p < end; ++p) {
-		const uint8_t ps = uint8_t(*p+move);
+	for (uint8_t *p = buf; p < end; ++p) {
+		chrt = uint8_t(*p+move);
 		for (uint8_t bit = 0x80u; bit > 0x00u; bit >>= 0x01u) {
 			if (mask & bit) {
-				if (ps & bit) {
-					c = pstr + (step >> 0x03u);
-					*c |= (0x80u >> (step & 0x07u));
+				if (chrt & bit) {
+					*pstr |= (0x80u >> (step & 0x07u));
 				}
-				++step;
+				pstr += !(++step & 0x07u);
 			}
 		}
 	}

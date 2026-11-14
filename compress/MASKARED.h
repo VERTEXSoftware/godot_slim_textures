@@ -169,6 +169,17 @@ MASKARED_RESULT MASKARED_DECODE(uint8_t* buf, uint32_t size, uint8_t* bufd, uint
 	uint8_t  		chr		= 0x00u;
 	uint32_t 		step	= 0x00u;
 
+	if (mask == 0x00u) {
+        chrt = accum - move;
+        for (uint8_t* d = bufd; d != endd; ++d) { *d = chrt; }
+        return MASKARED_RESULT::SL_OK;
+    }
+
+	if (mask == 0xFF) { 
+		for (uint8_t* d = bufd, *p = pstr; d != endd && p!=endp; ++d,++p) { *d = *p; }
+        return MASKARED_RESULT::SL_OK;
+    }
+
 	for (uint8_t bit = 0x80u; bit > 0x00u; bit >>= 0x01u) {
 		if (!(mask & bit)) {
 			if ((accum << step) & 0x80u) {

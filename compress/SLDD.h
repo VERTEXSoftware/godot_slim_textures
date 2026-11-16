@@ -201,8 +201,18 @@ SLDD_RESULT SLDD_DECODE(uint8_t* buffer, uint32_t size, uint8_t* bufferde, uint3
 	uint8_t  chr			= 0x00u;
 	uint32_t step 			= 0x00u;
 
+	if (mstart == 128 && mend == 0) { 
+		for (uint8_t* d = bufferde, *p = pstr; d != endd && p!=endp; ++d,++p) { *d = *p; }
+        return SLDD_RESULT::SLDD_OK;
+    }
+
 	if (leftCount > 0x00u && leftc)  {chr |= ((uint8_t)((1u << leftCount) - 0x01u)) << (0x08u - leftCount);}
     if (rightCount > 0x00u && rightc) {chr |= ((uint8_t)((1u << rightCount) - 0x01u));}
+
+	if (mstart == mend) {
+        for (uint8_t* d = bufferde; d != endd; ++d) { *d = chr; }
+        return SLDD_RESULT::SLDD_OK;
+    }
 
 	for (uint8_t* d = bufferde; d < endd; ++d) {
 		chrt = chr;
